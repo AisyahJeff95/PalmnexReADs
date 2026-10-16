@@ -1450,3 +1450,229 @@ textarea.form-control {
   color: var(--brand-green);
 }
 
+/* ==========================================================================
+   Home Portal Styles (PalmnexReaDS Portal)
+   ========================================================================== */
+
+.home-container {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/* Hero Showcase Banner */
+.home-hero-banner {
+  position: relative;
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  border: 1px solid var(--border);
+  background-color: #0f172a;
+}
+
+.home-hero-img-wrap {
+  width: 100%;
+  max-height: 480px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.home-hero-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.home-hero-banner:hover .home-hero-img {
+  transform: scale(1.01);
+}
+
+.home-hero-footer-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 16px 24px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  border-top: 1px solid var(--border);
+}
+
+.home-hero-footer-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.home-hero-footer-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.home-hero-footer-sub {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.home-hero-cta-btns {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Quick Access Modules Grid */
+.home-modules-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.home-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 12px;
+}
+
+.home-section-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.home-section-badge {
+  font-size: 0.76rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background-color: var(--brand-green-bg);
+  color: var(--brand-green);
+  border: 1px solid var(--brand-green-border);
+}
+
+.home-modules-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 18px;
+}
+
+.home-module-card {
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.home-module-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px -5px rgba(22, 101, 52, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+  border-color: var(--brand-green);
+}
+
+.home-module-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--brand-green);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.home-module-card:hover::before {
+  opacity: 1;
+}
+
+.home-module-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.home-module-icon-box {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--brand-green-bg);
+  color: var(--brand-green);
+  border: 1px solid var(--brand-green-border);
+  flex-shrink: 0;
+}
+
+.home-module-tag {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+  padding: 2px 7px;
+  border-radius: 4px;
+  background-color: var(--bg-subtle);
+  color: var(--text-muted);
+}
+
+.home-module-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.home-module-desc {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+  flex: 1;
+}
+
+.home-module-footer {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--brand-green);
+}
+
+.home-module-arrow {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.2s ease;
+}
+
+.home-module-card:hover .home-module-arrow {
+  transform: translateX(4px);
+}
+
+
