@@ -406,8 +406,11 @@
   });
 
   // Save Harvest Data ([Yes] button)
-  document.getElementById('btn-save-harvest-data')?.addEventListener('click', () => {
+  document.getElementById('btn-save-harvest-data')?.addEventListener('click', async () => {
     const t = getCurrentTrial();
+    if (window.ReadaSync) {
+      await window.ReadaSync.saveHarvestRecords(t.code, activeHarvestYear, t.harvestRecords);
+    }
     showToast(`Saved ${t.harvestRecords.length} harvest records for ${t.code}`);
     refreshHeader();
     closeModal(modals.editor);
@@ -834,9 +837,12 @@
     openModal(modal);
   }
 
-  document.getElementById('btn-confirm-delete-yield')?.addEventListener('click', () => {
+  document.getElementById('btn-confirm-delete-yield')?.addEventListener('click', async () => {
     const t = getCurrentTrial();
     t.harvestRecords = [];
+    if (window.ReadaSync) {
+      await window.ReadaSync.saveHarvestRecords(t.code, activeHarvestYear, []);
+    }
     showToast(`Deleted all harvesting yield records for ${t.code}`);
     refreshHeader();
     closeModal(modals.delete);
@@ -883,19 +889,50 @@
 
   // Top Selector
   if (el.trialSelect) {
-    el.trialSelect.addEventListener('change', (e) => {
+    el.trialSelect.addEventListener('change', async (e) => {
       currentCode = e.target.value;
+      const t = getCurrentTrial();
+      if (window.ReadaSync && t) {
+        await window.ReadaSync.loadTrialDetails(t);
+      }
       refreshHeader();
       showToast(`Switched active trial to ${currentCode}`);
     });
   }
 
-  document.getElementById('btn-update-code-list')?.addEventListener('click', () => {
+  document.getElementById('btn-update-code-list')?.addEventListener('click', async () => {
+    if (window.ReadaSync) {
+      const freshTrials = await window.ReadaSync.fetchTrials();
+      if (freshTrials && freshTrials.length > 0) {
+        trials = freshTrials;
+      }
+    }
     refreshHeader();
-    showToast('Trial list refreshed from DATARYLD.DBF');
+    showToast('Trial list refreshed from Supabase Cloud');
   });
 
-  // Init
-  refreshHeader();
+  // Init with Supabase synchronization
+  async function init() {
+    if (window.ReadaSync && typeof window.ReadaSync.fetchTrials === 'function') {
+      try {
+        const fetched = await window.ReadaSync.fetchTrials();
+        if (fetched && fetched.length > 0) {
+          trials = fetched;
+          if (!trials.find(t => t.code === currentCode)) {
+            currentCode = trials[0].code;
+          }
+        }
+      } catch (e) {
+        console.warn('ReadaSync fetch error on init:', e);
+      }
+    }
+    const t = getCurrentTrial();
+    if (window.ReadaSync && t) {
+      await window.ReadaSync.loadTrialDetails(t);
+    }
+    refreshHeader();
+  }
+
+  init();
 
 })();

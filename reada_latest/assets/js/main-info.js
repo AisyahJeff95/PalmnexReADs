@@ -173,7 +173,7 @@
   }
 
   // Save Trial Main Info (Figure 4 [Yes] button)
-  document.getElementById('btn-save-trial-info')?.addEventListener('click', () => {
+  document.getElementById('btn-save-trial-info')?.addEventListener('click', async () => {
     const code = document.getElementById('info-trial-code').value.trim().toUpperCase();
     const estate = document.getElementById('info-estate').value.trim();
     const year = parseInt(document.getElementById('info-planting-year').value, 10) || 1988;
@@ -214,6 +214,11 @@
       };
       trials.unshift(newTrial);
       currentCode = code;
+
+      // Persist to Supabase
+      if (window.ReadaSync) {
+        await window.ReadaSync.saveTrial(newTrial);
+      }
       showToast(`Created Trial ${code} (${estate})`);
     } else {
       const t = getCurrentTrial();
@@ -222,6 +227,11 @@
       t.factorsCount = factors.length;
       t.factors = factors;
       t.factorInfo = info;
+
+      // Persist to Supabase
+      if (window.ReadaSync) {
+        await window.ReadaSync.saveTrial(t);
+      }
       showToast(`Updated Main Information for ${t.code}`);
     }
 
@@ -379,10 +389,15 @@
   });
 
   // Save Plot Treatment (Figure 7 [Yes] button)
-  document.getElementById('btn-save-plot-treatment')?.addEventListener('click', () => {
+  document.getElementById('btn-save-plot-treatment')?.addEventListener('click', async () => {
     const t = getCurrentTrial();
     t.densityType = document.getElementById('density-mode-varies').checked ? 'varies' : 'constant';
     t.constantDensity = parseInt(document.getElementById('density-constant-val').value, 10) || 148;
+    
+    if (window.ReadaSync) {
+      await window.ReadaSync.saveTrial(t, false);
+      await window.ReadaSync.saveTreatments(t.code, t.plotTreatments);
+    }
     showToast(`Saved ${t.plotTreatments.length} plot treatments for ${t.code}`);
     refreshHeader();
     closeModal(modals.plotTreatment);
@@ -497,8 +512,11 @@
   });
 
   // Save Palm Numbering (Figure 11 [Yes] button)
-  document.getElementById('btn-save-palm')?.addEventListener('click', () => {
+  document.getElementById('btn-save-palm')?.addEventListener('click', async () => {
     const t = getCurrentTrial();
+    if (window.ReadaSync) {
+      await window.ReadaSync.savePalms(t.code, t.palms);
+    }
     showToast(`Saved ${t.palms.length} palm numbers for ${t.code}`);
     refreshHeader();
     closeModal(modals.palmNumbering);
@@ -737,20 +755,30 @@
     openModal(modal);
   }
 
-  document.getElementById('btn-confirm-delete')?.addEventListener('click', () => {
+  document.getElementById('btn-confirm-delete')?.addEventListener('click', async () => {
     const t = getCurrentTrial();
     if (currentDeleteType === 'info') {
-      const idx = trials.findIndex(tr => tr.code === t.code);
+      const codeToDelete = t.code;
+      const idx = trials.findIndex(tr => tr.code === codeToDelete);
       if (idx !== -1) {
         trials.splice(idx, 1);
         currentCode = trials[0] ? trials[0].code : '';
-        showToast(`Deleted trial ${t.code}`);
+        if (window.ReadaSync) {
+          await window.ReadaSync.deleteTrial(codeToDelete);
+        }
+        showToast(`Deleted trial ${codeToDelete}`);
       }
     } else if (currentDeleteType === 'treatment') {
       t.plotTreatments = [];
+      if (window.ReadaSync) {
+        await window.ReadaSync.saveTreatments(t.code, []);
+      }
       showToast(`Deleted plot treatments for ${t.code}`);
     } else {
       t.palms = [];
+      if (window.ReadaSync) {
+        await window.ReadaSync.savePalms(t.code, []);
+      }
       showToast(`Deleted palm numbers for ${t.code}`);
     }
 
@@ -769,14 +797,26 @@
   document.getElementById('btn-read-info-backup')?.addEventListener('click', () => openBackupModal('info'));
 
   // Group 2: Plot Treatment
-  document.getElementById('btn-entry-plot-treatment')?.addEventListener('click', () => openPlotTreatmentModal());
+  document.getElementById('btn-entry-plot-treatment')?.addEventListener('click', async () => {
+    const t = getCurrentTrial();
+    if (window.ReadaSync && t) {
+      await window.ReadaSync.loadTrialDetails(t);
+    }
+    openPlotTreatmentModal();
+  });
   document.getElementById('btn-save-treatment-dbf')?.addEventListener('click', () => openSaveDbfModal('treatment'));
   document.getElementById('btn-read-treatment-backup')?.addEventListener('click', () => openBackupModal('treatment'));
   document.getElementById('btn-read-treatment-nonreada')?.addEventListener('click', () => openNonReadaModal('treatment'));
   document.getElementById('btn-delete-plot-treatment')?.addEventListener('click', () => openDeleteModal('treatment'));
 
   // Group 3: Palm Numbering
-  document.getElementById('btn-entry-palm-numbering')?.addEventListener('click', () => openPalmNumberingModal());
+  document.getElementById('btn-entry-palm-numbering')?.addEventListener('click', async () => {
+    const t = getCurrentTrial();
+    if (window.ReadaSync && t) {
+      await window.ReadaSync.loadTrialDetails(t);
+    }
+    openPalmNumberingModal();
+  });
   document.getElementById('btn-save-palm-dbf')?.addEventListener('click', () => openSaveDbfModal('palm'));
   document.getElementById('btn-read-palm-backup')?.addEventListener('click', () => openBackupModal('palm'));
   document.getElementById('btn-read-palm-nonreada')?.addEventListener('click', () => openNonReadaModal('palm'));
@@ -784,19 +824,50 @@
 
   // Top Selector and Update Code List
   if (el.trialSelect) {
-    el.trialSelect.addEventListener('change', (e) => {
+    el.trialSelect.addEventListener('change', async (e) => {
       currentCode = e.target.value;
+      const t = getCurrentTrial();
+      if (window.ReadaSync && t) {
+        await window.ReadaSync.loadTrialDetails(t);
+      }
       refreshHeader();
       showToast(`Switched active trial to ${currentCode}`);
     });
   }
 
-  document.getElementById('btn-update-code-list')?.addEventListener('click', () => {
+  document.getElementById('btn-update-code-list')?.addEventListener('click', async () => {
+    if (window.ReadaSync) {
+      const freshTrials = await window.ReadaSync.fetchTrials();
+      if (freshTrials && freshTrials.length > 0) {
+        trials = freshTrials;
+      }
+    }
     refreshHeader();
-    showToast('Trial code list refreshed from DATAINFO.DBF');
+    showToast('Trial code list refreshed from Supabase Cloud');
   });
 
-  // Init
-  refreshHeader();
+  // Init with Supabase synchronization
+  async function init() {
+    if (window.ReadaSync && typeof window.ReadaSync.fetchTrials === 'function') {
+      try {
+        const fetched = await window.ReadaSync.fetchTrials();
+        if (fetched && fetched.length > 0) {
+          trials = fetched;
+          if (!trials.find(t => t.code === currentCode)) {
+            currentCode = trials[0].code;
+          }
+        }
+      } catch (e) {
+        console.warn('ReadaSync fetch error on init:', e);
+      }
+    }
+    const t = getCurrentTrial();
+    if (window.ReadaSync && t) {
+      await window.ReadaSync.loadTrialDetails(t);
+    }
+    refreshHeader();
+  }
+
+  init();
 
 })();

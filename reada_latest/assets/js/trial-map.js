@@ -166,12 +166,19 @@
   // --------------------------------------------------------------------------
   // Initialization
   // --------------------------------------------------------------------------
-  window.addEventListener('DOMContentLoaded', () => {
+  window.addEventListener('DOMContentLoaded', async () => {
+    if (window.ReadaSync && typeof window.ReadaSync.fetchTrials === 'function') {
+      try {
+        await window.ReadaSync.fetchTrials();
+      } catch (e) {
+        console.warn('ReadaSync fetch error on map init:', e);
+      }
+    }
     loadTrialsData();
     initMap();
     renderTrialsSidebar();
     setupEventListeners();
-    loadSavedBoundaries();
+    await loadSavedBoundaries();
   });
 
   function loadTrialsData() {
@@ -671,7 +678,7 @@
     }
   }
 
-  function saveBoundariesToStorage() {
+  async function saveBoundariesToStorage() {
     try {
       const serializable = state.drawnLayers.map(d => ({
         id: d.id,
@@ -681,17 +688,41 @@
         latLngs: d.latLngs
       }));
       localStorage.setItem('palmnex_trial_boundaries', JSON.stringify(serializable));
+
+      if (window.ReadaSync) {
+        for (const b of serializable) {
+          await window.ReadaSync.saveBoundary(b.trialCode, b.name, b.areaHa, b.latLngs);
+        }
+      }
     } catch (e) {
-      console.warn('Could not save boundaries to localStorage:', e);
+      console.warn('Could not save boundaries:', e);
     }
   }
 
-  function loadSavedBoundaries() {
+  async function loadSavedBoundaries() {
     try {
-      const saved = localStorage.getItem('palmnex_trial_boundaries');
-      if (!saved) return;
-      const parsed = JSON.parse(saved);
-      if (!Array.isArray(parsed)) return;
+      let parsed = [];
+      const client = window.ReadaSync ? window.ReadaSync.getClient() : null;
+      if (client) {
+        const { data } = await client.from('trial_boundaries').select('*');
+        if (data && data.length > 0) {
+          parsed = data.map(r => ({
+            id: r.id,
+            name: r.boundary_name,
+            trialCode: r.trial_code,
+            areaHa: Number(r.area_hectares) || 0,
+            latLngs: r.coordinates
+          }));
+        }
+      }
+
+      if (parsed.length === 0) {
+        const saved = localStorage.getItem('palmnex_trial_boundaries');
+        if (saved) {
+          const lParsed = JSON.parse(saved);
+          if (Array.isArray(lParsed)) parsed = lParsed;
+        }
+      }
 
       parsed.forEach(item => {
         if (!item.latLngs || item.latLngs.length < 3) return;

@@ -277,13 +277,21 @@
     }
   }
 
-  function saveTrialAnnualData(trial) {
+  async function saveTrialAnnualData(trial) {
     if (!trial) return;
     try {
       const storageKey = 'reada_annual_plot_data_' + trial.code;
       localStorage.setItem(storageKey, JSON.stringify(trial.annualPlotData));
     } catch (e) {
       console.warn('Failed to save annual plot data to localStorage', e);
+    }
+
+    if (window.ReadaSync && trial.annualPlotData) {
+      for (const [cat, rows] of Object.entries(trial.annualPlotData)) {
+        if (Array.isArray(rows) && rows.length > 0) {
+          window.ReadaSync.saveAnnualPlotData(trial.code, cat, 'ANNUAL', rows);
+        }
+      }
     }
   }
 
@@ -2772,7 +2780,20 @@
 
   // ================= Initialize Controller =================
 
-  function init() {
+  async function init() {
+    if (window.ReadaSync && typeof window.ReadaSync.fetchTrials === 'function') {
+      try {
+        const fetched = await window.ReadaSync.fetchTrials();
+        if (fetched && fetched.length > 0) {
+          trials = fetched;
+          if (!trials.find(t => t.code === currentCode)) {
+            currentCode = trials[0].code;
+          }
+        }
+      } catch (e) {
+        console.warn('ReadaSync fetch error on init:', e);
+      }
+    }
     populateTrialDropdown();
     renderAll();
     bindEvents();

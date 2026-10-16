@@ -635,11 +635,14 @@
     renderGridEditorRows();
   }
 
-  function saveGridMeasurements() {
+  async function saveGridMeasurements() {
     const trial = getCurrentTrial();
     if (!trial) return;
 
     trial.vegetativeRecords = JSON.parse(JSON.stringify(editableVegRecords));
+    if (window.ReadaSync) {
+      await window.ReadaSync.saveVegetativeRecords(trial.code, trial.vegetativeRecords);
+    }
     closeModal(modals.edit);
     refreshDashboard();
     showToast(`Saved ${trial.vegetativeRecords.length} vegetative sampling records for ${trial.code}`);
@@ -1036,11 +1039,17 @@
     if (scope === 'all') {
       trial.vegetativeRecords = [];
       trial.vegetativeMeasurement = [];
+      if (window.ReadaSync) {
+        window.ReadaSync.saveVegetativeRecords(trial.code, []);
+      }
       showToast(`All vegetative records deleted for Trial ${trial.code}`);
     } else {
       trial.vegetativeRecords = [];
       if (trial.vegetativeMeasurement) {
         trial.vegetativeMeasurement = trial.vegetativeMeasurement.filter(y => (y.year !== activeSamplingYear && y.yr !== activeSamplingYear));
+      }
+      if (window.ReadaSync) {
+        window.ReadaSync.saveVegetativeRecords(trial.code, []);
       }
       showToast(`Removed active sampling campaign (${activeSamplingYear}) for Trial ${trial.code}`);
     }
@@ -1184,7 +1193,20 @@
 
   // Global helper
   window.READA_VEG = {
-    init: function () {
+    init: async function () {
+      if (window.ReadaSync && typeof window.ReadaSync.fetchTrials === 'function') {
+        try {
+          const fetched = await window.ReadaSync.fetchTrials();
+          if (fetched && fetched.length > 0) {
+            trials = fetched;
+            if (!trials.find(t => t.code === currentCode)) {
+              currentCode = trials[0].code;
+            }
+          }
+        } catch (e) {
+          console.warn('ReadaSync fetch error on init:', e);
+        }
+      }
       populateTrialDropdown();
       refreshDashboard();
       initEventListeners();

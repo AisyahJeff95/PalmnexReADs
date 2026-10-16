@@ -8,7 +8,7 @@
 (function () {
   'use strict';
 
-  const TRIALS = Array.isArray(window.READA_TRIALS) ? window.READA_TRIALS : [];
+  let TRIALS = Array.isArray(window.READA_TRIALS) ? window.READA_TRIALS : [];
 
   const DATASETS = [
     { key: 'recordingYield',        title: 'Recording Yield',        kind: 'period', color: 'var(--c-recording)', note: 'Recording duration' },
@@ -369,9 +369,27 @@
     }
   });
 
-  // Init
-  renderMetrics();
-  renderMasterList();
-  renderDetail();
+  // Init with Supabase synchronization
+  async function init() {
+    if (window.ReadaSync && typeof window.ReadaSync.fetchTrials === 'function') {
+      try {
+        const fetched = await window.ReadaSync.fetchTrials();
+        if (fetched && fetched.length > 0) {
+          TRIALS = fetched;
+        }
+      } catch (e) {
+        console.warn('ReadaSync fetch error on init:', e);
+      }
+    }
+    renderMetrics();
+    renderMasterList();
+    renderDetail();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
 
 })();
