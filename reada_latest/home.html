@@ -521,7 +521,11 @@
     // 2. Format email if plain username
     let emailToAuth = rawInput;
     if (!emailToAuth.includes('@')) {
-      emailToAuth = `${rawInput}@palmnex.mpob.gov.my`;
+      if (rawInput.toLowerCase() === 'admin1') {
+        emailToAuth = 'admin1@palmnex.com.my';
+      } else {
+        emailToAuth = `${rawInput}@palmnex.com.my`;
+      }
     }
 
     // 3. Supabase Auth attempt
