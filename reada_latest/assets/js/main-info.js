@@ -507,53 +507,28 @@
   // =========================================================================
   // FIGURES 5, 8, 12 (2.3, 2.7, 2.12): Save As *.dbf File Pop-ups
   // =========================================================================
-  function openSaveDbfModal(type) {
-    currentSaveType = type;
+  // =========================================================================
+  // FIGURES 5, 8, 12: Direct CSV Export to Downloads
+  // =========================================================================
+  function exportMainInfoCSVDirect(type) {
     const t = getCurrentTrial();
-    const modal = modals.saveDbf;
-    const title = document.getElementById('save-dbf-title');
-    const filenameInp = document.getElementById('save-dbf-filename');
-    const summary = document.getElementById('save-dbf-summary');
-
-    document.getElementById('save-dbf-code').textContent = t.code;
-    document.getElementById('save-dbf-estate').textContent = t.estate;
+    let csvFileName = '';
+    let csvContent = '';
 
     if (type === 'info') {
-      title.textContent = 'Save Trial Main Information As *.csv File';
-      filenameInp.value = `C:\\READA\\INFO${t.code}.CSV`;
-      summary.textContent = `Includes Trial Code (${t.code}), Location (${t.estate}), Year (${t.plantingYear}), and ${t.factors.length} Treatment Factors.`;
-    } else if (type === 'treatment') {
-      title.textContent = 'Save Plot Treatment Data As *.csv File';
-      filenameInp.value = `C:\\READA\\TREAT.CSV`;
-      summary.textContent = `Includes ${t.plotTreatments.length} plot records with factorial levels and planting density.`;
-    } else {
-      title.textContent = 'Save Palm Number Data As *.csv File';
-      filenameInp.value = `C:\\READA\\PALM.CSV`;
-      summary.textContent = `Includes ${t.palms.length} registered palm numbers with progeny genetics.`;
-    }
-
-    openModal(modal);
-  }
-
-  // Confirm Save / Export as CSV ONLY (No JSON / No DBF)
-  document.getElementById('btn-confirm-save-dbf')?.addEventListener('click', () => {
-    const t = getCurrentTrial();
-    const filename = document.getElementById('save-dbf-filename').value.trim();
-    const baseName = filename.split('\\').pop() || 'EXPORT.CSV';
-    const csvFileName = baseName.replace(/\.(dbf|json)$/i, '') + (baseName.toLowerCase().endsWith('.csv') ? '' : '.csv');
-
-    let csvContent = '';
-    if (currentSaveType === 'info') {
+      csvFileName = `INFO_${t.code}.csv`;
       csvContent = 'TRIAL_CODE,ESTATE,PLANTING_YEAR,FACTORS_COUNT,DENSITY_TYPE,CONSTANT_DENSITY,FACTOR_DEFINITIONS\n';
       const factorDef = (t.factorInfo || '').replace(/"/g, '""').replace(/\n/g, '; ');
       csvContent += `"${t.code}","${t.estate}",${t.plantingYear || ''},${(t.factors || []).length},"${t.densityType || ''}",${t.constantDensity || ''},"${factorDef}"\n`;
-    } else if (currentSaveType === 'treatment') {
+    } else if (type === 'treatment') {
+      csvFileName = `TREAT_${t.code}.csv`;
       csvContent = 'REC_NO,PLOT_NO,SUB_PLOT,FACTOR1,FACTOR2,FACTOR3,FACTOR4,FACTOR5,FACTOR6,DENSITY\n';
       (t.plotTreatments || []).forEach(tr => {
         const lvls = tr.levels || [];
         csvContent += `${tr.rec},${tr.plot},"${tr.subPlot || ''}",${lvls[0] ?? ''},${lvls[1] ?? ''},${lvls[2] ?? ''},${lvls[3] ?? ''},${lvls[4] ?? ''},${lvls[5] ?? ''},${tr.density || ''}\n`;
       });
     } else {
+      csvFileName = `PALM_${t.code}.csv`;
       csvContent = 'REC_NO,PLOT_NO,SUB_PLOT,PALM_NO,PROGENY,STATUS\n';
       (t.palms || []).forEach(p => {
         csvContent += `${p.rec},${p.plot},"${p.subPlot || ''}","${p.palmNo || ''}","${(p.progeny || '').replace(/"/g, '""')}","${p.status || ''}"\n`;
@@ -570,7 +545,17 @@
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 
-    showToast(`Exported ${csvFileName}`);
+    showToast(`Downloaded ${csvFileName} to your Downloads folder`);
+  }
+
+  function openSaveDbfModal(type) {
+    currentSaveType = type;
+    exportMainInfoCSVDirect(type);
+  }
+
+  // Confirm Save / Export as CSV ONLY (No JSON / No DBF)
+  document.getElementById('btn-confirm-save-dbf')?.addEventListener('click', () => {
+    exportMainInfoCSVDirect(currentSaveType);
     closeModal(modals.saveDbf);
   });
 

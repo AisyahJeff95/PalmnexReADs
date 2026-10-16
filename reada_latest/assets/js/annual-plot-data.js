@@ -2188,31 +2188,14 @@
 
   // ================= Modal 5: Create ASCII Scientific Export =================
 
-  function openCreateAsciiDialog() {
-    const catSelect = document.getElementById('ascii-category');
-    if (catSelect) catSelect.value = activeCategory;
-    openModal(modals.createAscii);
-  }
-
   function handleConfirmCreateAscii() {
     const trial = getCurrentTrial();
     if (!trial) return;
 
-    const fileNameInput = document.getElementById('ascii-filename');
-    const catSelect = document.getElementById('ascii-category');
-    const delimSelect = document.getElementById('ascii-delimiter');
-
-    let fileName = fileNameInput?.value.trim() || 'ANNDATA.CSV';
-    if (!fileName.toLowerCase().endsWith('.csv')) {
-      fileName = fileName.replace(/\.[^/.]+$/, "") + '.csv';
-    }
-    const category = catSelect?.value || 'ffb';
-    const delimiterChoice = delimSelect?.value || 'comma';
-
+    const category = activeCategory || 'ffb';
+    const fileName = `ANNDATA_${trial.code}_${category.toUpperCase()}.csv`;
     const rows = trial.annualPlotData[category] || [];
     let delimiter = ',';
-    if (delimiterChoice === 'space') delimiter = ' ';
-    if (delimiterChoice === 'tab') delimiter = '\t';
 
     let content = '';
     if (category === 'ffb') {
@@ -2242,109 +2225,54 @@
     }
 
     // Trigger download as clean CSV
-    downloadFile(fileName.split('\\').pop() || 'ANNDATA.CSV', content, 'text/csv');
-    closeModal(modals.createAscii);
-    showToast(`Scientific CSV data file exported: ${fileName}`);
+    downloadFile(fileName, content, 'text/csv');
+    if (modals.createAscii) closeModal(modals.createAscii);
+    showToast(`Downloaded ${fileName} to your Downloads folder`);
+  }
+
+  function openCreateAsciiDialog() {
+    handleConfirmCreateAscii();
   }
 
   // ================= Modal 6: Save DBF / CSV Export =================
 
-  function openSaveDbfDialog() {
-    const catSelect = document.getElementById('export-annual-cat');
-    if (catSelect) catSelect.value = activeCategory;
-    const pathInput = document.getElementById('export-annual-filename');
-    if (pathInput) pathInput.value = `C:\\READA\\${categoryConfig[activeCategory].tableName.replace('.DBF', '.CSV')}`;
-    openModal(modals.saveDbf);
-  }
-
   function handleConfirmExportAnnual() {
-    const pathInput = document.getElementById('export-annual-filename');
-    const catSelect = document.getElementById('export-annual-cat');
-    const scopeRadio = document.querySelector('input[name="export-annual-scope"]:checked');
+    const trial = getCurrentTrial();
+    if (!trial) return;
+    ensureTrialAnnualData(trial);
 
-    const fileName = pathInput?.value.trim() || 'DATAFFB.CSV';
-    const catChoice = catSelect?.value || 'ffb';
-    const scope = scopeRadio ? scopeRadio.value : 'active';
-
-    const trialsToExport = (scope === 'all') ? trials : [getCurrentTrial()];
-
-    let csv = '';
-    if (catChoice === 'all') {
-      csv = 'TRIAL,ESTATE,PLOT,FFB_THA,BWT_KG,NOB_PALM,N_PCT,P_PCT,K_PCT,LAI,PH_H2O,CEC\n';
-      trialsToExport.forEach(t => {
-        ensureTrialAnnualData(t);
-        const ffb = t.annualPlotData.ffb || [];
-        const leaf = t.annualPlotData.leaf || [];
-        const veg = t.annualPlotData.veg || [];
-        const soil = t.annualPlotData.soil || [];
-        const maxPlots = Math.max(ffb.length, leaf.length, veg.length, soil.length);
-        for (let i = 0; i < maxPlots; i++) {
-          const f = ffb[i] || {};
-          const l = leaf[i] || {};
-          const v = veg[i] || {};
-          const s = soil[i] || {};
-          const plot = f.plot || l.plot || (i + 1);
-          csv += `${t.code},"${t.estate}",${plot},${f.ffbYield || ''},${f.bwt || ''},${f.nob || ''},${l.n || ''},${l.p || ''},${l.k || ''},${v.lai || ''},${s.ph || ''},${s.cec || ''}\n`;
-        }
-      });
-    } else {
-      if (catChoice === 'ffb') {
-        csv = 'TRIAL,ESTATE,REC,PLOT,PALMS,BWT,NOB,PALM_YIELD,FFB_YIELD,TOTAL_BWT,TOTAL_BNO\n';
-        trialsToExport.forEach(t => {
-          ensureTrialAnnualData(t);
-          (t.annualPlotData.ffb || []).forEach(r => {
-            csv += `${t.code},"${t.estate}",${r.rec},${r.plot},${r.palms},${r.bwt},${r.nob},${r.palmYield},${r.ffbYield},${r.bwtTotal},${r.bnoTotal}\n`;
-          });
-        });
-      } else if (catChoice === 'leaf') {
-        csv = 'TRIAL,ESTATE,REC,PLOT,SAMPLE_TYPE,N,P,K,CA,MG,S,CL,B,CU,ZN,MN,FE\n';
-        trialsToExport.forEach(t => {
-          ensureTrialAnnualData(t);
-          (t.annualPlotData.leaf || []).forEach(r => {
-            csv += `${t.code},"${t.estate}",${r.rec},${r.plot},"${r.sampleType}",${r.n},${r.p},${r.k},${r.ca},${r.mg},${r.s},${r.cl},${r.b},${r.cu},${r.zn},${r.mn},${r.fe}\n`;
-          });
-        });
-      } else if (catChoice === 'veg') {
-        csv = 'TRIAL,ESTATE,REC,PLOT,FROND,RACHIS_LEN,PETIOLE_W,PETIOLE_D,PETIOLE_AREA,PINNAE,LEAF_AREA,FDW,LAI,TRUNK_HT\n';
-        trialsToExport.forEach(t => {
-          ensureTrialAnnualData(t);
-          (t.annualPlotData.veg || []).forEach(r => {
-            csv += `${t.code},"${t.estate}",${r.rec},${r.plot},${r.frond},${r.rachisLen},${r.petioleW},${r.petioleD},${r.petioleArea},${r.pinnae},${r.leafArea},${r.fdw},${r.lai},${r.trunkHt}\n`;
-          });
-        });
-      } else if (catChoice === 'soil') {
-        csv = 'TRIAL,ESTATE,REC,PLOT,DEPTH,PH,ORG_C,TOTAL_N,EXTR_P,EXCH_K,EXCH_CA,EXCH_MG,CEC\n';
-        trialsToExport.forEach(t => {
-          ensureTrialAnnualData(t);
-          (t.annualPlotData.soil || []).forEach(r => {
-            csv += `${t.code},"${t.estate}",${r.rec},${r.plot},"${r.depth}",${r.ph},${r.orgC},${r.totalN},${r.extrP},${r.exchK},${r.exchCa},${r.exchMg},${r.cec}\n`;
-          });
-        });
-      }
+    const fileName = `ANNDATA_${trial.code}.csv`;
+    let csv = 'TRIAL,ESTATE,PLOT,FFB_THA,BWT_KG,NOB_PALM,N_PCT,P_PCT,K_PCT,LAI,PH_H2O,CEC\n';
+    const ffb = trial.annualPlotData.ffb || [];
+    const leaf = trial.annualPlotData.leaf || [];
+    const veg = trial.annualPlotData.veg || [];
+    const soil = trial.annualPlotData.soil || [];
+    const maxPlots = Math.max(ffb.length, leaf.length, veg.length, soil.length);
+    for (let i = 0; i < maxPlots; i++) {
+      const f = ffb[i] || {};
+      const l = leaf[i] || {};
+      const v = veg[i] || {};
+      const s = soil[i] || {};
+      const plot = f.plot || l.plot || (i + 1);
+      csv += `${trial.code},"${trial.estate}",${plot},${f.ffbYield || ''},${f.bwt || ''},${f.nob || ''},${l.n || ''},${l.p || ''},${l.k || ''},${v.lai || ''},${s.ph || ''},${s.cec || ''}\n`;
     }
 
-    downloadFile(fileName.split('\\').pop() || 'DATA.CSV', csv, 'text/csv');
-    closeModal(modals.saveDbf);
-    showToast(`Data exported into ${fileName}`);
+    downloadFile(fileName, csv, 'text/csv');
+    if (modals.saveDbf) closeModal(modals.saveDbf);
+    showToast(`Downloaded ${fileName} to your Downloads folder`);
+  }
+
+  function openSaveDbfDialog() {
+    handleConfirmExportAnnual();
   }
 
   // ================= Modal 7: Make Trial BackUp Data =================
-
-  function openMakeBackupDialog() {
-    updateMetricsStrip();
-    openModal(modals.makeBackup);
-  }
 
   function handleConfirmMakeBackup() {
     const trial = getCurrentTrial();
     if (!trial) return;
 
-    const pathInput = document.getElementById('backup-dest-file');
-    let fileName = pathInput?.value.trim() || 'BCANN.CSV';
-    if (!fileName.toLowerCase().endsWith('.csv')) {
-      fileName = fileName.replace(/\.[^/.]+$/, "") + '.csv';
-    }
-
+    const fileName = `BCANN_${trial.code}.csv`;
     let csv = 'ARCHIVE_TYPE,TRIAL_CODE,ESTATE,CATEGORY,REC_NO,PLOT_NO,PALM_COUNT,PARAM_1,PARAM_2,PARAM_3,PARAM_4,PARAM_5,PARAM_6,PARAM_7,PARAM_8,PARAM_9,PARAM_10,PARAM_11,PARAM_12\n';
 
     // FFB
@@ -2364,9 +2292,13 @@
       csv += `ANNUAL_ARCHIVE,${trial.code},"${trial.estate}",SOIL_NUTRIENT,${r.rec},${r.plot},16,"${r.depth}",${r.ph},${r.orgC},${r.totalN},${r.extrP},${r.exchK},${r.exchCa},${r.exchMg},${r.cec},,\n`;
     });
 
-    downloadFile(fileName.split('\\').pop() || 'BCANN.CSV', csv, 'text/csv');
-    closeModal(modals.makeBackup);
-    showToast(`Created BackUp archive (.CSV): ${fileName}`);
+    downloadFile(fileName, csv, 'text/csv');
+    if (modals.makeBackup) closeModal(modals.makeBackup);
+    showToast(`Downloaded ${fileName} to your Downloads folder`);
+  }
+
+  function openMakeBackupDialog() {
+    handleConfirmMakeBackup();
   }
 
   // ================= Modal 8: Read Data From BackUp File =================

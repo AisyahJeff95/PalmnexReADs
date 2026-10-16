@@ -851,48 +851,34 @@
     openModal(modals.print);
   }
 
-  // ================= Modal 6: Export DBF / CSV =================
+  // ================= Modal 6: Export CSV Direct to Downloads =================
 
   function exportVegetativeData() {
     const trial = getCurrentTrial();
     if (!trial) return;
 
-    const filenameInput = document.getElementById('export-veg-filename');
-    const filename = (filenameInput ? filenameInput.value : '') || 'DATAVM.CSV';
+    const csvFileName = `DATAVM_${trial.code}.csv`;
 
-    const scopeRadio = document.querySelector('input[name="export-veg-scope"]:checked');
-    const scope = scopeRadio ? scopeRadio.value : 'raw';
-
-    let csvContent = '';
-
-    if (scope === 'annual') {
-      csvContent = 'TRIAL_CODE,YEAR,SAMPLED_PALMS,MEAN_P_AREA_CM2,MEAN_LEAF_AREA_M2,MEAN_FDW_KG,CANOPY_LAI,MEAN_TRUNK_M\n';
-      const annual = trial.vegetativeMeasurement || [];
-      annual.forEach(row => {
-        csvContent += `"${trial.code}",${row.year || row.yr},${row.count || 0},${row.meanPetioleArea || 0},${row.meanLeafArea || 0},${row.meanFDW || 0},${row.meanLAI || 0},${row.meanTrunkHt || 0}\n`;
-      });
-    } else {
-      csvContent = 'REC_NO,PLOT,SUBPLOT,PALM_NO,FROND,RACHIS_CM,PET_W_CM,PET_D_CM,P_AREA_CM2,PINNAE_CNT,L_LEN_CM,L_WID_CM,LEAF_AREA_M2,FDW_KG,TRUNK_M\n';
-      const records = trial.vegetativeRecords || [];
-      records.forEach((r, idx) => {
-        const pArea = calcPetioleArea(r.petioleW, r.petioleD);
-        const leafArea = calcFrondLeafArea(r.pinnaeCount, r.leafletLen, r.leafletW);
-        const fdw = calcFrondDryWeight(pArea);
-        csvContent += `${r.rec || idx + 1},${r.plot},"${r.subPlot || ''}","${r.palmNo}",${r.frond || 17},${r.rachisLen},${r.petioleW},${r.petioleD},${pArea.toFixed(2)},${r.pinnaeCount},${r.leafletLen},${r.leafletW},${leafArea.toFixed(2)},${fdw.toFixed(2)},${r.trunkHt}\n`;
-      });
-    }
+    let csvContent = 'TRIAL_CODE,ESTATE,REC_NO,PLOT_NO,SUB_PLOT,PALM_NO,FROND_NO,RACHIS_LEN_CM,PETIOLE_W_CM,PETIOLE_D_CM,PETIOLE_AREA_CM2,PINNAE_COUNT,LEAFLET_LEN_CM,LEAFLET_W_CM,LEAF_AREA_M2,FROND_DRY_WT_KG,TRUNK_HT_M\n';
+    const records = trial.vegetativeRecords || [];
+    records.forEach((r, idx) => {
+      const pArea = calcPetioleArea(r.petioleW, r.petioleD);
+      const leafArea = calcFrondLeafArea(r.pinnaeCount, r.leafletLen, r.leafletW);
+      const fdw = calcFrondDryWeight(pArea);
+      csvContent += `"${trial.code}","${trial.estate}",${r.rec || idx + 1},${r.plot},"${r.subPlot || ''}","${r.palmNo}",${r.frond || 17},${r.rachisLen},${r.petioleW},${r.petioleD},${pArea.toFixed(2)},${r.pinnaeCount},${r.leafletLen},${r.leafletW},${leafArea.toFixed(2)},${fdw.toFixed(2)},${r.trunkHt}\n`;
+    });
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    const csvFileName = filename.replace(/\.(dbf|json)$/i, '') + (filename.toLowerCase().endsWith('.csv') ? '' : '.csv');
     link.setAttribute('download', csvFileName);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
 
-    closeModal(modals.saveDbf);
-    showToast(`Exported ${scope === 'annual' ? 'DATAVM' : 'ACFSDATA'} records to ${csvFileName}`);
+    if (modals.saveDbf) closeModal(modals.saveDbf);
+    showToast(`Downloaded ${csvFileName} to your Downloads folder (${records.length} records)`);
   }
 
   // ================= Modal 7: Read Backup / Excel =================
@@ -1157,7 +1143,7 @@
 
     // Groupbox 3: System & Backups
     const btnSaveDbf = document.getElementById('btn-save-veg-dbf');
-    if (btnSaveDbf) btnSaveDbf.addEventListener('click', () => openModal(modals.saveDbf));
+    if (btnSaveDbf) btnSaveDbf.addEventListener('click', exportVegetativeData);
 
     const btnConfirmExport = document.getElementById('btn-confirm-export-veg');
     if (btnConfirmExport) btnConfirmExport.addEventListener('click', exportVegetativeData);

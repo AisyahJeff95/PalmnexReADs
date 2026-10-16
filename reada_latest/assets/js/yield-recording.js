@@ -614,27 +614,11 @@
   });
 
   // =========================================================================
-  // 6. SAVE AS DBF / CSV (MAKE_COPY_FILE)
+  // 6. DIRECT CSV EXPORT TO DOWNLOADS
   // =========================================================================
-  function openSaveDbfModal() {
+  function exportYieldCSVDirect() {
     const t = getCurrentTrial();
-    const modal = modals.saveDbf;
-
-    document.getElementById('save-yield-code').textContent = t.code;
-    document.getElementById('save-yield-estate').textContent = t.estate;
-    document.getElementById('save-yield-filename').value = `C:\\READA\\YLD${t.code}.DBF`;
-    document.getElementById('save-yield-summary').textContent =
-      `Includes ${t.harvestRecords.length} harvesting round records and ${t.missingPalms.length} missing palm records for trial ${t.code}.`;
-
-    openModal(modal);
-  }
-
-  // Confirm Save / Export as CSV ONLY (No JSON / No DBF)
-  document.getElementById('btn-confirm-save-yield')?.addEventListener('click', () => {
-    const t = getCurrentTrial();
-    const filename = document.getElementById('save-yield-filename').value.trim();
-    const baseName = filename.split('\\').pop() || `DATARYLD_${t.code}.csv`;
-    const csvFileName = baseName.replace(/\.(dbf|json)$/i, '') + (baseName.toLowerCase().endsWith('.csv') ? '' : '.csv');
+    const csvFileName = `DATARYLD_${t.code}.csv`;
 
     let csvContent = 'TRIAL_CODE,ESTATE,REC_NO,PLOT_NO,SUB_PLOT,PALM_NO,ROUND_NO,HARVEST_DATE,NO_BUNCH,BUNCH_WT_KG,LOOSE_FRUIT_KG,HARVESTER_ID,REMARKS\n';
     (t.harvestRecords || []).forEach(r => {
@@ -651,7 +635,15 @@
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 
-    showToast(`Exported ${csvFileName}`);
+    showToast(`Downloaded ${csvFileName} to your Downloads folder (${t.harvestRecords.length} records)`);
+  }
+
+  function openSaveDbfModal() {
+    exportYieldCSVDirect();
+  }
+
+  document.getElementById('btn-confirm-save-yield')?.addEventListener('click', () => {
+    exportYieldCSVDirect();
     closeModal(modals.saveDbf);
   });
 
