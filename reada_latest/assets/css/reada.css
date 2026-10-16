@@ -169,9 +169,9 @@ button, input, select {
 
 .nav-item {
   display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 10px 12px;
+  align-items: center;
+  gap: 11px;
+  padding: 8px 12px;
   border-radius: var(--radius-sm);
   font-size: 0.88rem;
   font-weight: 500;
@@ -193,10 +193,9 @@ button, input, select {
 }
 
 .nav-item-icon {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   flex-shrink: 0;
-  margin-top: 1px;
 }
 
 .nav-item-text {
@@ -205,14 +204,7 @@ button, input, select {
 }
 
 .nav-item-sub {
-  font-size: 0.72rem;
-  font-weight: 400;
-  color: var(--text-faint);
-  margin-top: 2px;
-}
-
-.nav-item.active .nav-item-sub {
-  color: #15803d;
+  display: none !important;
 }
 
 /* Distinctive styling for Annual Plot Data tab on left sidebar - subtle distinct color without looking clicked */
@@ -226,11 +218,6 @@ button, input, select {
   color: #d97706; /* distinct warm amber icon */
 }
 
-.nav-item.nav-item-annual .nav-item-sub {
-  color: var(--text-faint);
-  font-weight: 400;
-}
-
 .nav-item.nav-item-annual:hover {
   background-color: #fffbeb;
   border-color: #fde68a;
@@ -241,10 +228,6 @@ button, input, select {
   color: #d97706;
 }
 
-.nav-item.nav-item-annual:hover .nav-item-sub {
-  color: #b45309;
-}
-
 .nav-item.nav-item-annual.active {
   background-color: #fef3c7;
   border-color: #fde68a;
@@ -252,10 +235,6 @@ button, input, select {
   color: #92400e;
   font-weight: 700;
   box-shadow: 0 1px 3px rgba(217, 119, 6, 0.12);
-}
-
-.nav-item.nav-item-annual.active .nav-item-sub {
-  color: #b45309;
 }
 
 /* Smaller, simpler secondary nav items for left panel - compact styling */
