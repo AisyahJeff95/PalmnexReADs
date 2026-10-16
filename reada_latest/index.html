@@ -245,66 +245,85 @@
       </div>
     </div>
 
-    <!-- ================= 2. Center Floating Welcome Card (Shown AFTER LOGGING IN) ================= -->
-    <div id="home-welcome-card" class="home-welcome-card" style="display: none;">
-      <div class="home-card-header">
-        <div class="login-brand-icon">
-          <img src="assets/img/palmnex-logo.png" alt="PalmnexReaDS Logo">
+    <!-- ================= 2. Direct In-Page Smart Dashboard (Shown AFTER LOGGING IN) ================= -->
+    <div id="home-dashboard-view" class="home-dashboard-layout" style="display: none;">
+      
+      <div class="home-smart-content">
+        
+        <!-- Header Branding & Status -->
+        <div class="home-smart-brand">
+          <div class="home-smart-logo">
+            <img src="assets/img/palmnex-logo.png" alt="PalmnexReaDS Logo">
+          </div>
+          <div class="home-smart-header">
+            <h1>PalmnexReaDS</h1>
+            <p>Palmnex Research and Database System · MPOB</p>
+          </div>
         </div>
-        <h1 class="login-title" style="margin: 0; font-size: 1.4rem;">PalmnexReaDS</h1>
-        <p class="login-subtitle" style="margin: 0;">
-          Palmnex Research and Database System · MPOB
-        </p>
-        <div class="user-session-badge">
+
+        <div class="home-smart-badge">
           <span class="user-status-dot"></span>
-          <span id="home-user-badge">Active Session: Lead Agronomist</span>
+          <span id="home-user-badge">Active Session: Lead Agronomist (Admin)</span>
         </div>
-      </div>
 
-      <!-- Short Welcome Note -->
-      <div class="home-welcome-note">
-        <strong>Welcome, <span id="home-welcome-user">Lead Agronomist</span>!</strong><br>
-        Your session is active. You have full access to MPOB oil palm research trial archives, field yield recordings, vegetative measurements, and annual plot analytics.
-      </div>
+        <!-- Short Welcome Note -->
+        <div class="home-smart-note">
+          <strong>Welcome, <span id="home-welcome-user">Lead Agronomist (Admin)</span>!</strong>
+          Your session is active. You have full access to MPOB oil palm research trial archives, field yield recordings, vegetative measurements, and annual plot analytics.
+        </div>
 
-      <!-- Options / Action Cards -->
-      <div class="home-action-cards">
-        <!-- Option 1: User Manual -->
-        <a href="user-manual.html" class="home-action-card">
-          <div class="home-action-icon" style="background: rgba(22, 101, 52, 0.1); color: #166534;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-          </div>
-          <div class="home-action-info">
-            <div class="home-action-title">
-              <span>User Manual &amp; Guidelines</span>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px;"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        <!-- Action Cards Directly on Page -->
+        <div class="home-smart-cards">
+          <!-- Option 1: User Manual -->
+          <a href="user-manual.html" class="home-smart-card">
+            <div class="home-smart-icon" style="background: rgba(22, 101, 52, 0.1); color: #166534;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 22px; height: 22px;"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
             </div>
-            <div class="home-action-desc">System documentation, MPOB operational guidelines &amp; field recording standards</div>
-          </div>
-        </a>
-
-        <!-- Option 2: List of Available Trial Data -->
-        <a href="list-available-data.html" class="home-action-card home-action-primary">
-          <div class="home-action-icon" style="background: #166534; color: #ffffff;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
-          </div>
-          <div class="home-action-info">
-            <div class="home-action-title">
-              <span>List of Available Trial Data</span>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px;"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            <div class="home-smart-info">
+              <div class="home-smart-title">
+                <span>User Manual &amp; Guidelines</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px;"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              </div>
+              <div class="home-smart-desc">System documentation, MPOB operational guidelines &amp; field recording standards</div>
             </div>
-            <div class="home-action-desc">Explore master trial directory, stations (Kluang, Teluk Intan, Sabah), and datasets</div>
-          </div>
-        </a>
+          </a>
+
+          <!-- Option 2: List of Available Trial Data -->
+          <a href="list-available-data.html" class="home-smart-card primary-card">
+            <div class="home-smart-icon" style="background: #166534; color: #ffffff;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 22px; height: 22px;"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+            </div>
+            <div class="home-smart-info">
+              <div class="home-smart-title">
+                <span>List of Available Trial Data</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px;"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              </div>
+              <div class="home-smart-desc">Explore master trial directory, stations (Kluang, Teluk Intan, Sabah), and datasets</div>
+            </div>
+          </a>
+        </div>
+
+        <!-- Station Pills / Quick Info -->
+        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 4px;">
+          <span style="font-size: 0.74rem; font-weight: 700; color: #ffffff; text-shadow: 0 1px 3px rgba(0,0,0,0.4);">MPOB Research Stations:</span>
+          <span style="font-size: 0.72rem; background: rgba(255, 255, 255, 0.9); border: 1px solid rgba(255, 255, 255, 0.95); padding: 3px 10px; border-radius: 12px; color: #0f172a; font-weight: 600;">Kluang (Johor)</span>
+          <span style="font-size: 0.72rem; background: rgba(255, 255, 255, 0.9); border: 1px solid rgba(255, 255, 255, 0.95); padding: 3px 10px; border-radius: 12px; color: #0f172a; font-weight: 600;">Teluk Intan (Perak)</span>
+          <span style="font-size: 0.72rem; background: rgba(255, 255, 255, 0.9); border: 1px solid rgba(255, 255, 255, 0.95); padding: 3px 10px; border-radius: 12px; color: #0f172a; font-weight: 600;">Lahad Datu (Sabah)</span>
+        </div>
+
       </div>
 
-      <!-- Card Footer -->
-      <div class="home-card-footer" style="justify-content: flex-end;">
-        <button type="button" class="home-logout-btn" onclick="handleLogout()">
+      <!-- Bottom Bar directly on page -->
+      <div class="home-smart-footer">
+        <span style="color: rgba(255, 255, 255, 0.9); text-shadow: 0 1px 3px rgba(0,0,0,0.5); font-size: 0.74rem; font-weight: 500;">
+          Malaysian Palm Oil Board · Palmnex Agronomy Station Engine V2.0
+        </span>
+        <button type="button" onclick="handleLogout()" class="home-logout-btn" style="background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(8px);">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 12px; height: 12px;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
           Log Out
         </button>
       </div>
+
     </div>
 
   </main>
@@ -318,25 +337,29 @@
 <script>
   function renderAuthState() {
     const isLoggedIn = !!localStorage.getItem('reada_logged_in');
+    const mainEl = document.querySelector('.app-main-login');
+    const overlayEl = document.querySelector('.login-backdrop-overlay');
     const navContainer = document.getElementById('sidebar-nav-container');
     const loginCard = document.getElementById('login-card');
-    const welcomeCard = document.getElementById('home-welcome-card');
+    const dashboardView = document.getElementById('home-dashboard-view');
     const userSessionRaw = localStorage.getItem('palmnex_user_session');
 
-    let displayName = 'Lead Agronomist';
+    let displayName = 'Lead Agronomist (Admin)';
     if (userSessionRaw) {
       try {
         const u = JSON.parse(userSessionRaw);
-        displayName = u.user_metadata?.full_name || u.email?.split('@')[0] || u.username || 'Lead Agronomist';
+        displayName = u.user_metadata?.full_name || u.email?.split('@')[0] || u.username || 'Lead Agronomist (Admin)';
       } catch (e) {}
     } else if (localStorage.getItem('reada_logged_in') === 'guest') {
       displayName = 'Guest Researcher';
     }
 
     if (isLoggedIn) {
+      if (mainEl) mainEl.classList.add('is-authenticated');
+      if (overlayEl) overlayEl.classList.add('is-authenticated');
       if (navContainer) navContainer.style.display = 'flex';
       if (loginCard) loginCard.style.display = 'none';
-      if (welcomeCard) welcomeCard.style.display = 'flex';
+      if (dashboardView) dashboardView.style.display = 'flex';
 
       const welcomeUser = document.getElementById('home-welcome-user');
       const badgeUser = document.getElementById('home-user-badge');
@@ -345,9 +368,11 @@
       if (badgeUser) badgeUser.textContent = `Active Session: ${displayName}`;
       if (sidebarUser) sidebarUser.textContent = displayName;
     } else {
+      if (mainEl) mainEl.classList.remove('is-authenticated');
+      if (overlayEl) overlayEl.classList.remove('is-authenticated');
       if (navContainer) navContainer.style.display = 'none';
       if (loginCard) loginCard.style.display = 'flex';
-      if (welcomeCard) welcomeCard.style.display = 'none';
+      if (dashboardView) dashboardView.style.display = 'none';
     }
   }
 
