@@ -70,7 +70,8 @@
       trials.forEach(tr => {
         const opt = document.createElement('option');
         opt.value = tr.code;
-        opt.textContent = `${tr.code} — ${tr.estate}`;
+        const ownerTag = tr.isBaseline ? '[Shared Baseline]' : `[${tr.createdByEmail || 'Private'}]`;
+        opt.textContent = `${tr.code} — ${tr.estate} ${ownerTag}`;
         if (tr.code === currentCode) opt.selected = true;
         el.trialSelect.appendChild(opt);
       });

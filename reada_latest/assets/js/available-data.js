@@ -142,6 +142,10 @@
     const totalRecs = countRecords(trial);
 
     // Detail Header
+    const isBase = trial.isBaseline || !trial.userId;
+    const ownerText = isBase ? 'Shared PORIM Baseline' : (trial.createdByEmail || 'Private Experiment');
+    const ownerColor = isBase ? '#15803d' : '#2563eb';
+
     let html = `
       <div class="detail-header">
         <div class="detail-title-group">
@@ -149,7 +153,7 @@
             <span>${trial.code}</span>
             <span style="font-weight: 400; color: var(--text-muted); font-size: 1rem;">· ${trial.estate || 'Unspecified Location'}</span>
           </h3>
-          <p>Planting Year: <strong>${trial.plantingYear || '1988'}</strong> &nbsp;|&nbsp; Database File: <strong>DATAINFO.DBF</strong></p>
+          <p>Planting Year: <strong>${trial.plantingYear || '1988'}</strong> &nbsp;|&nbsp; Ownership: <strong style="color: ${ownerColor};">${ownerText}</strong></p>
         </div>
         <div style="display: flex; align-items: center; gap: 8px;">
           <span class="badge-tag">${totalRecs} Total Annual Records</span>
