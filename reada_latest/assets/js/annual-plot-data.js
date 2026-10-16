@@ -688,11 +688,11 @@
     el.annualChartKpiBar.innerHTML = '';
     if (el.annualChartLegend) el.annualChartLegend.innerHTML = '';
 
-    const width = 900;
-    const height = 300;
-    const padLeft = 60;
-    const padRight = 35;
-    const padTop = 30;
+    const width = 940;
+    const height = 310;
+    const padLeft = 55;
+    const padRight = 125; // Dedicated right-margin zone for reference line badges
+    const padTop = 32;
     const padBottom = 45;
     const plotW = width - padLeft - padRight;
     const plotH = height - padTop - padBottom;
@@ -742,6 +742,86 @@
     });
     el.annualPlotSvg.appendChild(bgRect);
 
+    // Helper: Draw horizontal reference line with a dedicated right-margin badge (Zero overlap with bars/numbers)
+    function drawRefLine(yVal, yMax, color, strokeWidth, dashArray, badgeText, badgeBg, badgeTextColor, badgeBorder) {
+      if (yVal > yMax || yVal < 0) return;
+      const yPos = padTop + plotH - (yVal / yMax) * plotH;
+
+      // Dashed line across plot area
+      const line = createSvgElem('line', {
+        x1: padLeft,
+        y1: yPos,
+        x2: padLeft + plotW + 5,
+        y2: yPos,
+        stroke: color,
+        'stroke-width': strokeWidth,
+        'stroke-dasharray': dashArray
+      });
+      el.annualPlotSvg.appendChild(line);
+
+      // Badge in right margin
+      const badgeW = 110;
+      const badgeH = 19;
+      const badgeX = padLeft + plotW + 8;
+      const badgeY = yPos - badgeH / 2;
+
+      const pill = createSvgElem('rect', {
+        x: badgeX,
+        y: badgeY,
+        width: badgeW,
+        height: badgeH,
+        rx: 4,
+        fill: badgeBg,
+        stroke: badgeBorder,
+        'stroke-width': 1.1
+      });
+      el.annualPlotSvg.appendChild(pill);
+
+      const txt = createSvgElem('text', {
+        x: badgeX + badgeW / 2,
+        y: yPos + 3.5,
+        'text-anchor': 'middle',
+        fill: badgeTextColor,
+        'font-size': '10px',
+        'font-weight': '700',
+        'font-family': 'var(--font-sans)'
+      });
+      txt.textContent = badgeText;
+      el.annualPlotSvg.appendChild(txt);
+    }
+
+    // Helper: Draw floating bar value badge with opaque background to prevent lines cutting through text
+    function drawBarValueBadge(centerX, topY, valueText, textColor, strokeColor) {
+      const badgeW = Math.max(34, String(valueText).length * 7.5 + 8);
+      const badgeH = 16;
+      const badgeX = centerX - badgeW / 2;
+      const badgeY = topY - badgeH - 3;
+
+      const pill = createSvgElem('rect', {
+        x: badgeX,
+        y: badgeY,
+        width: badgeW,
+        height: badgeH,
+        rx: 3,
+        fill: '#ffffff',
+        stroke: strokeColor,
+        'stroke-width': 0.9
+      });
+      el.annualPlotSvg.appendChild(pill);
+
+      const txt = createSvgElem('text', {
+        x: centerX,
+        y: badgeY + 11.5,
+        'text-anchor': 'middle',
+        fill: textColor,
+        'font-size': '10.5px',
+        'font-weight': '700',
+        'font-family': 'var(--font-mono)'
+      });
+      txt.textContent = valueText;
+      el.annualPlotSvg.appendChild(txt);
+    }
+
     if (chartActiveMetric === 'ffb') {
       const ffbData = trial.annualPlotData.ffb || [];
       if (ffbData.length === 0) return;
@@ -756,7 +836,7 @@
       });
 
       const maxVal = Math.max(...yields, 50);
-      const yMax = Math.ceil(maxVal / 10) * 10;
+      const yMax = Math.ceil((maxVal * 1.18) / 10) * 10; // Extra headroom so bars never crowd ceiling
       const benchmark = 30.0;
 
       // KPI chips
@@ -808,57 +888,9 @@
         el.annualPlotSvg.appendChild(txt);
       }
 
-      // Benchmark dashed line (30 t/ha)
-      if (benchmark <= yMax) {
-        const benchY = padTop + plotH - (benchmark / yMax) * plotH;
-        const bLine = createSvgElem('line', {
-          x1: padLeft,
-          y1: benchY,
-          x2: padLeft + plotW,
-          y2: benchY,
-          stroke: '#f59e0b',
-          'stroke-width': 1.5,
-          'stroke-dasharray': '5 4'
-        });
-        el.annualPlotSvg.appendChild(bLine);
-
-        const bText = createSvgElem('text', {
-          x: padLeft + plotW - 6,
-          y: benchY - 4,
-          'text-anchor': 'end',
-          fill: '#b45309',
-          'font-size': '10px',
-          'font-weight': '600'
-        });
-        bText.textContent = `Target: ${benchmark} t/ha`;
-        el.annualPlotSvg.appendChild(bText);
-      }
-
-      // Mean dashed line
-      if (meanYield <= yMax) {
-        const meanY = padTop + plotH - (meanYield / yMax) * plotH;
-        const mLine = createSvgElem('line', {
-          x1: padLeft,
-          y1: meanY,
-          x2: padLeft + plotW,
-          y2: meanY,
-          stroke: '#16a34a',
-          'stroke-width': 2,
-          'stroke-dasharray': '6 4'
-        });
-        el.annualPlotSvg.appendChild(mLine);
-
-        const mText = createSvgElem('text', {
-          x: padLeft + 10,
-          y: meanY - 5,
-          'text-anchor': 'start',
-          fill: '#15803d',
-          'font-size': '11px',
-          'font-weight': '700'
-        });
-        mText.textContent = `Trial Mean: ${meanYield} t/ha`;
-        el.annualPlotSvg.appendChild(mText);
-      }
+      // Draw reference lines with dedicated non-overlapping right margin badges
+      drawRefLine(benchmark, yMax, '#f59e0b', 1.5, '5 4', `Target: ${benchmark} t/ha`, '#fffbeb', '#b45309', '#fde68a');
+      drawRefLine(meanYield, yMax, '#16a34a', 2, '6 4', `Mean: ${meanYield} t/ha`, '#f0fdf4', '#15803d', '#bbf7d0');
 
       // Bars
       const n = ffbData.length;
@@ -902,18 +934,14 @@
 
         el.annualPlotSvg.appendChild(rect);
 
-        // Value text
-        const valText = createSvgElem('text', {
-          x: barX + barW / 2,
-          y: barY - 6,
-          'text-anchor': 'middle',
-          fill: isAboveMean ? '#15803d' : '#b45309',
-          'font-size': '11px',
-          'font-weight': '700',
-          'font-family': 'var(--font-mono)'
-        });
-        valText.textContent = d.ffbYield;
-        el.annualPlotSvg.appendChild(valText);
+        // Value badge above bar (opaque white pill, fully visible)
+        drawBarValueBadge(
+          barX + barW / 2,
+          barY,
+          d.ffbYield,
+          isAboveMean ? '#15803d' : '#b45309',
+          isAboveMean ? '#bbf7d0' : '#fde68a'
+        );
 
         // X label
         const xText = createSvgElem('text', {
@@ -957,7 +985,7 @@
       const meanP = formatAverage(leafData, 'p', 3);
       const meanMg = formatAverage(leafData, 'mg', 2);
 
-      const yMax = 3.5;
+      const yMax = 3.6; // Clean headroom above 2.91
       const critN = 2.60;
       const critK = 1.00;
 
@@ -985,7 +1013,7 @@
       `;
 
       // Y-axis grid
-      const steps = [0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5];
+      const steps = [0, 0.6, 1.2, 1.8, 2.4, 3.0, 3.6];
       steps.forEach(yVal => {
         const yPos = padTop + plotH - (yVal / yMax) * plotH;
         const grid = createSvgElem('line', {
@@ -1010,53 +1038,9 @@
         el.annualPlotSvg.appendChild(txt);
       });
 
-      // Critical N line
-      const nCritY = padTop + plotH - (critN / yMax) * plotH;
-      const nLine = createSvgElem('line', {
-        x1: padLeft,
-        y1: nCritY,
-        x2: padLeft + plotW,
-        y2: nCritY,
-        stroke: '#16a34a',
-        'stroke-width': 1.5,
-        'stroke-dasharray': '5 4'
-      });
-      el.annualPlotSvg.appendChild(nLine);
-
-      const nText = createSvgElem('text', {
-        x: padLeft + plotW - 6,
-        y: nCritY - 4,
-        'text-anchor': 'end',
-        fill: '#15803d',
-        'font-size': '10px',
-        'font-weight': '600'
-      });
-      nText.textContent = `N Critical: 2.60%`;
-      el.annualPlotSvg.appendChild(nText);
-
-      // Critical K line
-      const kCritY = padTop + plotH - (critK / yMax) * plotH;
-      const kLine = createSvgElem('line', {
-        x1: padLeft,
-        y1: kCritY,
-        x2: padLeft + plotW,
-        y2: kCritY,
-        stroke: '#3b82f6',
-        'stroke-width': 1.5,
-        'stroke-dasharray': '5 4'
-      });
-      el.annualPlotSvg.appendChild(kLine);
-
-      const kText = createSvgElem('text', {
-        x: padLeft + 10,
-        y: kCritY - 4,
-        'text-anchor': 'start',
-        fill: '#1d4ed8',
-        'font-size': '10px',
-        'font-weight': '600'
-      });
-      kText.textContent = `K Critical: 1.00%`;
-      el.annualPlotSvg.appendChild(kText);
+      // Draw reference lines with dedicated non-overlapping right margin badges
+      drawRefLine(critN, yMax, '#16a34a', 1.5, '5 4', `N Crit: 2.60%`, '#f0fdf4', '#15803d', '#bbf7d0');
+      drawRefLine(critK, yMax, '#3b82f6', 1.5, '5 4', `K Crit: 1.00%`, '#eff6ff', '#1d4ed8', '#bfdbfe');
 
       // Grouped bars
       const n = leafData.length;
@@ -1070,8 +1054,8 @@
         const kH = (kVal / yMax) * plotH;
 
         const slotCenter = padLeft + (idx * slotW) + slotW / 2;
-        const nX = slotCenter - barW - 2;
-        const kX = slotCenter + 2;
+        const nX = slotCenter - barW - 3;
+        const kX = slotCenter + 3;
         const nY = padTop + plotH - nH;
         const kY = padTop + plotH - kH;
 
@@ -1118,28 +1102,9 @@
         el.annualPlotSvg.appendChild(rectN);
         el.annualPlotSvg.appendChild(rectK);
 
-        // Labels
-        const lblN = createSvgElem('text', {
-          x: nX + barW / 2,
-          y: nY - 4,
-          'text-anchor': 'middle',
-          fill: '#15803d',
-          'font-size': '9.5px',
-          'font-weight': '700'
-        });
-        lblN.textContent = d.n;
-        el.annualPlotSvg.appendChild(lblN);
-
-        const lblK = createSvgElem('text', {
-          x: kX + barW / 2,
-          y: kY - 4,
-          'text-anchor': 'middle',
-          fill: '#1d4ed8',
-          'font-size': '9.5px',
-          'font-weight': '700'
-        });
-        lblK.textContent = d.k;
-        el.annualPlotSvg.appendChild(lblK);
+        // Opaque value badges above each bar
+        drawBarValueBadge(nX + barW / 2, nY, Number(d.n).toFixed(2), '#15803d', '#bbf7d0');
+        drawBarValueBadge(kX + barW / 2, kY, Number(d.k).toFixed(2), '#1d4ed8', '#bfdbfe');
 
         // X label
         const xText = createSvgElem('text', {
@@ -1178,12 +1143,14 @@
       const vegData = trial.annualPlotData.veg || [];
       if (vegData.length === 0) return;
 
+      const laiVals = vegData.map(d => parseFloat(d.lai) || 0);
       const meanLai = formatAverage(vegData, 'lai', 2);
       const meanFdw = formatAverage(vegData, 'fdw', 2);
       const meanArea = formatAverage(vegData, 'leafArea', 2);
       const meanRachis = formatAverage(vegData, 'rachisLen', 1);
 
-      const yMax = 7.0;
+      const maxLai = Math.max(...laiVals, 6.0);
+      const yMax = Number((Math.ceil(maxLai) + 1.5).toFixed(1)); // e.g. 7.5 or 8.0, leaves clean space above 5.95
       const targetLai = 5.50;
 
       el.annualChartKpiBar.innerHTML = `
@@ -1210,7 +1177,8 @@
       `;
 
       // Y-axis grid
-      const steps = [0, 1, 2, 3, 4, 5, 6, 7];
+      const steps = [];
+      for (let s = 0; s <= yMax; s += 1) steps.push(s);
       steps.forEach(yVal => {
         const yPos = padTop + plotH - (yVal / yMax) * plotH;
         const grid = createSvgElem('line', {
@@ -1235,29 +1203,8 @@
         el.annualPlotSvg.appendChild(txt);
       });
 
-      // Target LAI line (5.5)
-      const tLaiY = padTop + plotH - (targetLai / yMax) * plotH;
-      const tLine = createSvgElem('line', {
-        x1: padLeft,
-        y1: tLaiY,
-        x2: padLeft + plotW,
-        y2: tLaiY,
-        stroke: '#0d9488',
-        'stroke-width': 2,
-        'stroke-dasharray': '5 4'
-      });
-      el.annualPlotSvg.appendChild(tLine);
-
-      const tText = createSvgElem('text', {
-        x: padLeft + plotW - 6,
-        y: tLaiY - 4,
-        'text-anchor': 'end',
-        fill: '#0f766e',
-        'font-size': '10px',
-        'font-weight': '700'
-      });
-      tText.textContent = `Full Canopy Closure (LAI 5.5)`;
-      el.annualPlotSvg.appendChild(tText);
+      // Dedicated non-overlapping right margin badge for target LAI
+      drawRefLine(targetLai, yMax, '#0d9488', 2, '5 4', `Target LAI: ${targetLai}`, '#f0fdfa', '#0f766e', '#99f6e4');
 
       // Bars
       const n = vegData.length;
@@ -1301,18 +1248,8 @@
 
         el.annualPlotSvg.appendChild(rect);
 
-        // Value text
-        const valText = createSvgElem('text', {
-          x: barX + barW / 2,
-          y: barY - 6,
-          'text-anchor': 'middle',
-          fill: '#0f766e',
-          'font-size': '11px',
-          'font-weight': '700',
-          'font-family': 'var(--font-mono)'
-        });
-        valText.textContent = d.lai;
-        el.annualPlotSvg.appendChild(valText);
+        // Opaque value badge above bar
+        drawBarValueBadge(barX + barW / 2, barY, Number(d.lai).toFixed(2), '#0f766e', '#99f6e4');
 
         // X label
         const xText = createSvgElem('text', {
@@ -1348,7 +1285,7 @@
       const meanOrgC = formatAverage(soilData, 'orgC', 2);
       const meanExtrP = formatAverage(soilData, 'extrP', 1);
 
-      const yMax = 7.0;
+      const yMax = 6.0; // Plenty of headroom above pH 4.52
 
       el.annualChartKpiBar.innerHTML = `
         <div class="chart-kpi-chip">
@@ -1374,7 +1311,7 @@
       `;
 
       // Y-axis grid
-      const steps = [0, 1, 2, 3, 4, 5, 6, 7];
+      const steps = [0, 1, 2, 3, 4, 5, 6];
       steps.forEach(yVal => {
         const yPos = padTop + plotH - (yVal / yMax) * plotH;
         const grid = createSvgElem('line', {
@@ -1399,29 +1336,8 @@
         el.annualPlotSvg.appendChild(txt);
       });
 
-      // Target pH Band Line (4.5)
-      const phY = padTop + plotH - (4.5 / yMax) * plotH;
-      const phLine = createSvgElem('line', {
-        x1: padLeft,
-        y1: phY,
-        x2: padLeft + plotW,
-        y2: phY,
-        stroke: '#854d0e',
-        'stroke-width': 1.5,
-        'stroke-dasharray': '5 4'
-      });
-      el.annualPlotSvg.appendChild(phLine);
-
-      const phText = createSvgElem('text', {
-        x: padLeft + plotW - 6,
-        y: phY - 4,
-        'text-anchor': 'end',
-        fill: '#854d0e',
-        'font-size': '10px',
-        'font-weight': '600'
-      });
-      phText.textContent = `Target pH: 4.5 (H₂O)`;
-      el.annualPlotSvg.appendChild(phText);
+      // Dedicated non-overlapping right margin badge for Target pH
+      drawRefLine(4.5, yMax, '#854d0e', 1.5, '5 4', `Target pH: 4.5`, '#fefce8', '#854d0e', '#fde68a');
 
       // Bars
       const n = soilData.length;
@@ -1466,18 +1382,8 @@
 
         el.annualPlotSvg.appendChild(rect);
 
-        // Value text
-        const valText = createSvgElem('text', {
-          x: barX + barW / 2,
-          y: barY - 6,
-          'text-anchor': 'middle',
-          fill: '#854d0e',
-          'font-size': '11px',
-          'font-weight': '700',
-          'font-family': 'var(--font-mono)'
-        });
-        valText.textContent = d.ph;
-        el.annualPlotSvg.appendChild(valText);
+        // Opaque value badge above bar
+        drawBarValueBadge(barX + barW / 2, barY, Number(d.ph).toFixed(2), '#854d0e', '#fde68a');
 
         // X label
         const xText = createSvgElem('text', {
