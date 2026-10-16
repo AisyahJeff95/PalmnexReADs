@@ -297,13 +297,25 @@
     state.markers = {};
 
     state.trials.forEach(trial => {
-      const geo = MPOB_COORDINATES[trial.code] || {
+      const trialLat = (trial.latitude !== null && trial.latitude !== undefined && !isNaN(trial.latitude)) ? Number(trial.latitude) : null;
+      const trialLng = (trial.longitude !== null && trial.longitude !== undefined && !isNaN(trial.longitude)) ? Number(trial.longitude) : null;
+
+      const fallback = MPOB_COORDINATES[trial.code] || {
         lat: 4.0042 + (Math.random() - 0.5) * 0.1,
         lng: 101.0205 + (Math.random() - 0.5) * 0.1,
         station: trial.estate || 'MPOB Station',
         soilSeries: 'Mineral / Alluvial Series',
         region: 'Malaysia',
         description: 'MPOB Agronomy Field Trial'
+      };
+
+      const geo = {
+        lat: trialLat !== null ? trialLat : fallback.lat,
+        lng: trialLng !== null ? trialLng : fallback.lng,
+        station: fallback.station || trial.estate || 'MPOB Station',
+        soilSeries: fallback.soilSeries || 'Mineral / Alluvial Series',
+        region: fallback.region || 'Malaysia',
+        description: fallback.description || 'MPOB Agronomy Field Trial'
       };
 
       const marker = L.marker([geo.lat, geo.lng], {
@@ -400,7 +412,13 @@
     }
 
     listEl.innerHTML = filtered.map(t => {
-      const geo = MPOB_COORDINATES[t.code] || { lat: 4.0042, lng: 101.0205 };
+      const trialLat = (t.latitude !== null && t.latitude !== undefined && !isNaN(t.latitude)) ? Number(t.latitude) : null;
+      const trialLng = (t.longitude !== null && t.longitude !== undefined && !isNaN(t.longitude)) ? Number(t.longitude) : null;
+      const fallback = MPOB_COORDINATES[t.code] || { lat: 4.0042, lng: 101.0205 };
+      const geo = {
+        lat: trialLat !== null ? trialLat : fallback.lat,
+        lng: trialLng !== null ? trialLng : fallback.lng
+      };
       const hasData = t.plotTreatments && t.plotTreatments.length > 0;
       const isActive = t.code === state.activeTrialCode;
       const factorCount = t.factorsCount || (t.factors ? t.factors.length : 0);

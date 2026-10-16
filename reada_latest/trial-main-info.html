@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="assets/css/reada.css?v=20261016c">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 </head>
 <body>
 
@@ -391,6 +392,54 @@
         </div>
       </div>
 
+      <!-- Geolocation & Location Points Selector -->
+      <div style="border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 16px; background-color: var(--bg-subtle);">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px; color: var(--brand-green);"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span style="font-size: 0.82rem; font-weight: 600; color: var(--text);">Field Geolocation Coordinates (GPS Points)</span>
+          </div>
+          <button type="button" class="btn" id="btn-pick-location-map" style="font-size: 0.74rem; padding: 4px 11px; display: inline-flex; align-items: center; gap: 5px; background: #ffffff; border: 1px solid var(--brand-green); color: var(--brand-green); font-weight: 600; cursor: pointer;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 13px; height: 13px;"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+            Choose Location on Map
+          </button>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1.3fr; gap: 12px; align-items: end;">
+          <div class="form-field">
+            <label for="info-latitude" style="font-size: 0.74rem;">Latitude (North &deg;)</label>
+            <input type="number" step="0.000001" id="info-latitude" class="form-control" placeholder="e.g. 4.025800" style="font-family: var(--font-mono); font-size: 0.82rem;">
+          </div>
+          <div class="form-field">
+            <label for="info-longitude" style="font-size: 0.74rem;">Longitude (East &deg;)</label>
+            <input type="number" step="0.000001" id="info-longitude" class="form-control" placeholder="e.g. 101.018900" style="font-family: var(--font-mono); font-size: 0.82rem;">
+          </div>
+          <div class="form-field">
+            <label for="select-preset-location" style="font-size: 0.74rem;">Or Preset Research Station</label>
+            <select id="select-preset-location" class="form-control" style="font-size: 0.78rem;">
+              <option value="">— Select Station Preset —</option>
+              <option value="4.0258,101.0189">Teluk Intan, Perak (4.0258, 101.0189)</option>
+              <option value="1.5167,104.1833">Sg. Papan, Kota Tinggi, Johor (1.5167, 104.1833)</option>
+              <option value="2.2333,103.2667">Bukit Paloh, Kluang, Johor (2.2333, 103.2667)</option>
+              <option value="2.0333,103.3167">MPOB Kluang, Johor (2.0333, 103.3167)</option>
+              <option value="5.9500,117.4167">Pamol, Sabah (5.9500, 117.4167)</option>
+              <option value="5.4833,118.0667">Malamba, Sabah (5.4833, 118.0667)</option>
+              <option value="5.0200,118.3200">MPOB Lahad Datu, Sabah (5.0200, 118.3200)</option>
+              <option value="4.2500,117.8800">MPOB Tawau, Sabah (4.2500, 117.8800)</option>
+              <option value="4.0200,101.0250">LPK Teluk Intan, Perak (4.0200, 101.0250)</option>
+              <option value="3.4167,101.3167">Gerdong, RISDA, Selangor (3.4167, 101.3167)</option>
+              <option value="2.9800,101.7300">MPOB Bangi Headquarters, Selangor (2.9800, 101.7300)</option>
+              <option value="3.1500,102.8500">MPOB Keratong, Pahang (3.1500, 102.8500)</option>
+              <option value="4.3800,113.9800">MPOB Miri, Sarawak (4.3800, 113.9800)</option>
+              <option value="1.5500,110.3500">MPOB Kuching, Sarawak (1.5500, 110.3500)</option>
+            </select>
+          </div>
+        </div>
+        <div style="font-size: 0.70rem; color: var(--text-faint); margin-top: 6px;">
+          Coordinates are stored in the Supabase <code style="font-family: var(--font-mono); font-size: 0.70rem;">trials</code> table and plotted on the interactive Trial Map Explorer.
+        </div>
+      </div>
+
       <!-- Treatment Factor Inputs & Description -->
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
         <div style="border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px; background-color: var(--bg-subtle);">
@@ -748,6 +797,39 @@
   </div>
 </div>
 
+<!-- =========================================================================
+     POP-UP 8: Choose Location Points on Map
+     ========================================================================= -->
+<div class="modal-overlay" id="modal-pick-location" role="dialog" aria-modal="true" aria-hidden="true" style="z-index: 1050;">
+  <div class="modal-dialog" style="max-width: 820px; width: 92%;">
+    <div class="modal-header-bar">
+      <div class="modal-title-text">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span>Pick Location Points on Satellite Map</span>
+      </div>
+      <button type="button" class="modal-close-icon" id="btn-close-map-picker" aria-label="Close dialog">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <div class="modal-body-scroll" style="padding: 14px;">
+      <div style="font-size: 0.80rem; color: var(--text-muted); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+        <span>Click anywhere on the satellite imagery to position your trial research plot.</span>
+        <span id="picker-coord-display" style="font-family: var(--font-mono); font-weight: 600; color: var(--brand-green); font-size: 0.82rem;">Lat: 4.025800 , Lng: 101.018900</span>
+      </div>
+      <div id="picker-map-canvas" style="height: 380px; width: 100%; border-radius: var(--radius-sm); border: 1px solid var(--border);"></div>
+    </div>
+
+    <div class="modal-footer-bar">
+      <button type="button" class="btn btn-secondary btn-modal-cancel" id="btn-cancel-location-pick">Cancel</button>
+      <button type="button" class="btn btn-primary" id="btn-confirm-location-pick">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;"><polyline points="20 6 9 17 4 12"/></svg>
+        Confirm & Use Selected Coordinates
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- Toast notification -->
 <div class="toast-msg" id="toast" role="status" aria-live="polite">
   <span id="toast-msg">Operation completed</span>
@@ -755,6 +837,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/js/supabase-config.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="assets/js/trial-data.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="assets/js/main-info.js"></script>

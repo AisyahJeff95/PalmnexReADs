@@ -130,6 +130,9 @@
     const factorCountInp = document.getElementById('info-factor-count');
     const factorInfoArea = document.getElementById('info-factor-details');
     const grid = document.getElementById('info-factors-grid');
+    const latInp = document.getElementById('info-latitude');
+    const lngInp = document.getElementById('info-longitude');
+    const presetSelect = document.getElementById('select-preset-location');
 
     if (isNew) {
       if (title) title.textContent = 'Create New Trial Information';
@@ -140,6 +143,9 @@
       factorCountInp.value = '4';
       factorInfoArea.value = 'Rep = Replicate\nN = Nitrogen\nP = Phosphorus\nK = Potassium';
       renderFactorInputs(['Rep', 'N', 'P', 'K', '', '', '']);
+      if (latInp) latInp.value = '4.025800';
+      if (lngInp) lngInp.value = '101.018900';
+      if (presetSelect) presetSelect.value = '4.0258,101.0189';
     } else {
       const t = getCurrentTrial();
       if (title) title.textContent = `Edit Trial Main Information — ${t.code}`;
@@ -152,6 +158,9 @@
       const labels = (t.factors || []).map(f => f.label);
       while (labels.length < 7) labels.push('');
       renderFactorInputs(labels);
+      if (latInp) latInp.value = (t.latitude !== null && t.latitude !== undefined) ? Number(t.latitude).toFixed(6) : '';
+      if (lngInp) lngInp.value = (t.longitude !== null && t.longitude !== undefined) ? Number(t.longitude).toFixed(6) : '';
+      if (presetSelect) presetSelect.value = '';
     }
 
     openModal(modal);
@@ -180,6 +189,11 @@
     const year = parseInt(document.getElementById('info-planting-year').value, 10) || 1988;
     const count = parseInt(document.getElementById('info-factor-count').value, 10) || 4;
     const info = document.getElementById('info-factor-details').value;
+
+    const latRaw = document.getElementById('info-latitude')?.value?.trim();
+    const lngRaw = document.getElementById('info-longitude')?.value?.trim();
+    const latitude = latRaw && !isNaN(parseFloat(latRaw)) ? parseFloat(latRaw) : null;
+    const longitude = lngRaw && !isNaN(parseFloat(lngRaw)) ? parseFloat(lngRaw) : null;
 
     const factorInputs = document.querySelectorAll('.factor-label-input');
     const factors = [];
@@ -210,6 +224,8 @@
         factorInfo: info,
         densityType: 'constant',
         constantDensity: 148,
+        latitude,
+        longitude,
         plotTreatments: [],
         palms: []
       };
@@ -232,6 +248,8 @@
       t.factorsCount = factors.length;
       t.factors = factors;
       t.factorInfo = info;
+      t.latitude = latitude;
+      t.longitude = longitude;
 
       // Persist to Supabase
       if (window.ReadaSync) {
@@ -853,6 +871,112 @@
     }
     refreshHeader();
     showToast('Trial code list refreshed from Supabase Cloud');
+  });
+
+  // =========================================================================
+  // INTERACTIVE MAP PICKER FOR TRIAL GPS COORDINATES
+  // =========================================================================
+  let pickerMap = null;
+  let pickerMarker = null;
+  let selectedPickCoord = { lat: 4.0258, lng: 101.0189 };
+
+  document.getElementById('select-preset-location')?.addEventListener('change', (e) => {
+    if (e.target.value) {
+      const [lat, lng] = e.target.value.split(',');
+      const latInp = document.getElementById('info-latitude');
+      const lngInp = document.getElementById('info-longitude');
+      if (latInp) latInp.value = parseFloat(lat).toFixed(6);
+      if (lngInp) lngInp.value = parseFloat(lng).toFixed(6);
+      selectedPickCoord = { lat: parseFloat(lat), lng: parseFloat(lng) };
+      showToast(`Selected preset: ${parseFloat(lat).toFixed(4)}, ${parseFloat(lng).toFixed(4)}`);
+    }
+  });
+
+  function openLocationPicker() {
+    const modal = document.getElementById('modal-pick-location');
+    if (!modal) return;
+
+    const latInp = document.getElementById('info-latitude');
+    const lngInp = document.getElementById('info-longitude');
+    let startLat = latInp && latInp.value ? parseFloat(latInp.value) : 4.0258;
+    let startLng = lngInp && lngInp.value ? parseFloat(lngInp.value) : 101.0189;
+    if (isNaN(startLat) || isNaN(startLng)) {
+      startLat = 4.0258;
+      startLng = 101.0189;
+    }
+    selectedPickCoord = { lat: startLat, lng: startLng };
+
+    openModal(modal);
+
+    setTimeout(() => {
+      initOrUpdatePickerMap(startLat, startLng);
+    }, 180);
+  }
+
+  function initOrUpdatePickerMap(lat, lng) {
+    const container = document.getElementById('picker-map-canvas');
+    if (!container || !window.L) return;
+
+    if (!pickerMap) {
+      pickerMap = L.map('picker-map-canvas', {
+        center: [lat, lng],
+        zoom: 14,
+        maxZoom: 19
+      });
+
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'ESRI World Imagery'
+      }).addTo(pickerMap);
+
+      L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+        attribution: ''
+      }).addTo(pickerMap);
+
+      pickerMarker = L.marker([lat, lng], { draggable: true }).addTo(pickerMap);
+
+      pickerMarker.on('dragend', function (e) {
+        const coord = e.target.getLatLng();
+        updatePickerDisplay(coord.lat, coord.lng);
+      });
+
+      pickerMap.on('click', function (e) {
+        pickerMarker.setLatLng(e.latlng);
+        updatePickerDisplay(e.latlng.lat, e.latlng.lng);
+      });
+    } else {
+      pickerMap.invalidateSize();
+      pickerMap.setView([lat, lng], 14);
+      if (pickerMarker) pickerMarker.setLatLng([lat, lng]);
+    }
+
+    updatePickerDisplay(lat, lng);
+  }
+
+  function updatePickerDisplay(lat, lng) {
+    selectedPickCoord = { lat, lng };
+    const disp = document.getElementById('picker-coord-display');
+    if (disp) {
+      disp.textContent = `Lat: ${lat.toFixed(6)} , Lng: ${lng.toFixed(6)}`;
+    }
+  }
+
+  document.getElementById('btn-pick-location-map')?.addEventListener('click', openLocationPicker);
+
+  document.getElementById('btn-close-map-picker')?.addEventListener('click', () => {
+    closeModal(document.getElementById('modal-pick-location'));
+  });
+
+  document.getElementById('btn-cancel-location-pick')?.addEventListener('click', () => {
+    closeModal(document.getElementById('modal-pick-location'));
+  });
+
+  document.getElementById('btn-confirm-location-pick')?.addEventListener('click', () => {
+    const latInp = document.getElementById('info-latitude');
+    const lngInp = document.getElementById('info-longitude');
+    if (latInp) latInp.value = selectedPickCoord.lat.toFixed(6);
+    if (lngInp) lngInp.value = selectedPickCoord.lng.toFixed(6);
+    closeModal(document.getElementById('modal-pick-location'));
+    showToast(`Set location to ${selectedPickCoord.lat.toFixed(6)}, ${selectedPickCoord.lng.toFixed(6)}`);
   });
 
   // Init with Supabase synchronization
