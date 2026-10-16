@@ -329,7 +329,7 @@
     trials.forEach(t => {
       const opt = document.createElement('option');
       opt.value = t.code;
-      opt.textContent = `${t.code} — ${t.estate} (${t.plantingYear || 'PORIM'})`;
+      opt.textContent = `${t.code} — ${t.estate} (${t.plantingYear || 'MPOB'})`;
       if (t.code === currentCode) opt.selected = true;
       el.trialSelect.appendChild(opt);
     });
@@ -1434,7 +1434,7 @@
     if (delimiterChoice === 'comma') delimiter = ',';
     if (delimiterChoice === 'tab') delimiter = '\t';
 
-    let content = `# PORIM ReaDA ASCII Export: Trial ${trial.code} (${categoryConfig[category].name})\n`;
+    let content = `# PalmnexReaDS (MPOB) ASCII Export: Trial ${trial.code} (${categoryConfig[category].name})\n`;
     content += `# File: ${fileName} | Date: ${new Date().toISOString()}\n`;
 
     if (category === 'ffb') {
@@ -1565,7 +1565,7 @@
     const fileName = pathInput?.value.trim() || 'BCANN.DBF';
 
     const backupPayload = {
-      archiveFormat: 'PORIM_READA_BCANN_v2',
+      archiveFormat: 'MPOB_PALMNEXREADS_BCANN_v2',
       timestamp: new Date().toISOString(),
       trialCode: trial.code,
       estate: trial.estate,

@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>User Manual &amp; Agronomic Guidelines · PalmnexReaDS</title>
-  <meta name="description" content="PalmnexReaDS User Manual: Official MPOB / PORIM operational documentation and reference guide for oil palm agronomy research trials and relational database.">
+  <title>User Manual &amp; Guidelines · PalmnexReaDS: Palmnex Research and Database System</title>
+  <meta name="description" content="PalmnexReaDS: Palmnex Research and Database System — Official MPOB operational documentation and reference guide.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="assets/css/reada.css">
@@ -40,33 +40,7 @@
       font-size: 0.88rem;
       color: #dcfce7;
       line-height: 1.5;
-      max-width: 650px;
-    }
-    .manual-hero-actions {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      flex-shrink: 0;
-    }
-    .btn-pdf-download {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: #ffffff;
-      color: #14532d;
-      font-weight: 700;
-      font-size: 0.85rem;
-      padding: 10px 18px;
-      border-radius: 8px;
-      text-decoration: none;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      transition: all 0.2s ease;
-      white-space: nowrap;
-    }
-    .btn-pdf-download:hover {
-      background: #f0fdf4;
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+      max-width: 720px;
     }
     .manual-grid {
       display: grid;
@@ -151,21 +125,6 @@
     .manual-card-link:hover {
       text-decoration: underline;
     }
-    .pdf-viewer-card {
-      background: #ffffff;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-    .pdf-frame {
-      width: 100%;
-      height: 600px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-    }
   </style>
 </head>
 <body>
@@ -180,7 +139,7 @@
       </div>
       <div>
         <div class="brand-title">PalmnexReaDS</div>
-        <div class="brand-subtitle">MPOB Oil Palm Agronomy Engine</div>
+        <div class="brand-subtitle">Palmnex Research and Database System</div>
       </div>
     </div>
 
@@ -254,8 +213,8 @@
     </nav>
 
     <div class="sidebar-footer">
-      <strong>Palm Oil Research Institute of Malaysia</strong>
-      PORIM · Agronomy Trial Database System
+      <strong>Malaysian Palm Oil Board</strong><br>
+      MPOB · Agronomy Trial Database System
     </div>
   </aside>
 
@@ -266,16 +225,12 @@
     <header class="app-header">
       <div class="header-meta">
         <h1>User Manual &amp; Guidelines</h1>
-        <p>PORIM Relational Database for Oil Palm Agronomy Trial Data (PalmnexReaDS System Manual)</p>
+        <p>PalmnexReaDS: Palmnex Research and Database System · MPOB</p>
       </div>
       <div class="header-actions">
         <a href="index.html" class="btn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
           Return to Home
-        </a>
-        <a href="assets/docs/PORIM-ReaDA-User-Manual.pdf" target="_blank" download="PORIM-ReaDA-User-Manual.pdf" class="btn btn-primary" style="background-color: #166534; color: #ffffff;">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Download PDF Manual
         </a>
       </div>
     </header>
@@ -288,13 +243,7 @@
         <div class="manual-hero">
           <div class="manual-hero-content">
             <h2>Agronomy Research Trial Database Guide</h2>
-            <p>Welcome to the PalmnexReaDS reference manual. This documentation outlines the standards, conventions, and database procedures established by the Palm Oil Research Institute of Malaysia (PORIM) for recording and managing oil palm trial datasets.</p>
-          </div>
-          <div class="manual-hero-actions">
-            <a href="assets/docs/PORIM-ReaDA-User-Manual.pdf" target="_blank" class="btn-pdf-download">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-              View Full PDF Manual
-            </a>
+            <p>Welcome to the PalmnexReaDS reference manual. This documentation outlines the standards, conventions, and database procedures established by the Malaysian Palm Oil Board (MPOB) for recording and managing oil palm research trial datasets.</p>
           </div>
         </div>
 
@@ -315,9 +264,9 @@
             <div class="manual-card-body">
               Master registry of all research stations (Kluang, Teluk Intan, Jerantut, Sabah).
               <ul>
-                <li>Displays data availability from 1988 through 1998+.</li>
+                <li>Displays data availability from historical records through modern trials.</li>
                 <li>Tracks annual indicators for Yield, Leaf, Veg, and Soil.</li>
-                <li>Filter by trial code, research station, or status.</li>
+                <li>Filter by trial code, research station, or trial status.</li>
               </ul>
             </div>
             <a href="list-available-data.html" class="manual-card-link">Open Trial List &rarr;</a>
@@ -338,8 +287,8 @@
               Detailed agronomic metadata for individual field experiments.
               <ul>
                 <li>Trial code structure (Station prefix + Trial number).</li>
-                <li>Experimental design, treatments, replicates, and plot allocations.</li>
-                <li>Palm numbering conventions and block layouts.</li>
+                <li>Experimental design, factorial treatments, replicates, and plot allocations.</li>
+                <li>Palm numbering conventions, block layouts, and palm densities.</li>
               </ul>
             </div>
             <a href="trial-main-info.html" class="manual-card-link">Open Main Info &rarr;</a>
@@ -381,7 +330,7 @@
             <div class="manual-card-body">
               Morphological vegetative growth assessment methodologies.
               <ul>
-                <li>Frond 17 sampling protocols.</li>
+                <li>Frond 17 sampling protocols (standard MPOB reference frond).</li>
                 <li>Petiole cross-section (PCS) &amp; rachis length.</li>
                 <li>Leaf Area Index (LAI) and annual height increment measurements.</li>
               </ul>
@@ -433,23 +382,6 @@
             <a href="index.html" class="manual-card-link">Return to Home Portal &rarr;</a>
           </div>
 
-        </div>
-
-        <!-- PDF Viewer Section -->
-        <div class="pdf-viewer-card">
-          <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px;">
-            <div>
-              <h3 style="margin: 0 0 4px 0; font-size: 1.1rem; color: var(--text);">Original PORIM ReaDA System Manual Document</h3>
-              <p style="margin: 0; font-size: 0.8rem; color: var(--text-muted);">Palm Oil Research Institute of Malaysia — Relational Database for Agronomy Trial Data (PORIM)</p>
-            </div>
-            <a href="assets/docs/PORIM-ReaDA-User-Manual.pdf" target="_blank" class="btn btn-outline" style="font-size: 0.8rem;">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;"><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
-              Open in Full Window
-            </a>
-          </div>
-          <iframe class="pdf-frame" src="assets/docs/PORIM-ReaDA-User-Manual.pdf" title="PORIM ReaDA User Manual Document">
-            <p>Your browser does not support inline PDF viewing. Please <a href="assets/docs/PORIM-ReaDA-User-Manual.pdf" target="_blank">click here to download or view the PDF manual</a>.</p>
-          </iframe>
         </div>
 
       </div>

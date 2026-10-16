@@ -178,7 +178,7 @@
 
     // Top metrics strip
     if (el.statCode) el.statCode.textContent = trial.code;
-    if (el.statEstate) el.statEstate.textContent = trial.estate || 'PORIM Station';
+    if (el.statEstate) el.statEstate.textContent = trial.estate || 'MPOB Station';
     if (el.statYear) el.statYear.textContent = activeSamplingYear;
     if (el.statRecords) el.statRecords.textContent = trial.vegetativeRecords.length;
 
@@ -400,7 +400,7 @@
       tbodyTrials.innerHTML = trials.map(t => `
         <tr class="selectable-row ${t.code === selectedTrialForEntry ? 'selected' : ''}" data-code="${t.code}" style="cursor: pointer;">
           <td><strong style="color: var(--brand-green);">${t.code}</strong></td>
-          <td>${t.estate || 'PORIM Station'}</td>
+          <td>${t.estate || 'MPOB Station'}</td>
         </tr>
       `).join('');
 
@@ -783,7 +783,7 @@
     if (frondsPalm) frondsPalm.value = 40;
 
     localStorage.removeItem('reada_veg_settings');
-    showToast('Reset coefficients to standard PORIM defaults');
+    showToast('Reset coefficients to standard MPOB defaults');
   }
 
   // ================= Modal 5: Printable Report =================
@@ -798,7 +798,7 @@
     if (printTrial) printTrial.textContent = trial.code;
 
     const printEstate = document.getElementById('print-estate');
-    if (printEstate) printEstate.textContent = trial.estate || 'PORIM Station';
+    if (printEstate) printEstate.textContent = trial.estate || 'MPOB Station';
 
     const printYear = document.getElementById('print-year');
     if (printYear) printYear.textContent = activeSamplingYear;

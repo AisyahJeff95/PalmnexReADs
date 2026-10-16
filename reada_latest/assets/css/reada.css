@@ -33,7 +33,7 @@
   --brand-gold-bg:   #fffbeb;
   --brand-gold-border: #fde68a;
 
-  /* Dataset Indicators (PORIM 5 Agronomic Columns) */
+  /* Dataset Indicators (MPOB 5 Agronomic Columns) */
   --c-recording: #d97706; /* Recording Yield - Gold */
   --c-ffb:       #ea580c; /* FFB Yield - Fruit Orange */
   --c-leaf:      #16a34a; /* Leaf Nutrients - Leaf Green */

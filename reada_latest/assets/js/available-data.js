@@ -312,8 +312,8 @@
   // Export Selected Trial Data to JSON
   function exportTrialData(trial) {
     const exportObj = {
-      system: 'ReaDA — Relational Database for Agronomy Trial Data',
-      institution: 'Palm Oil Research Institute of Malaysia (PORIM / MPOB)',
+      system: 'PalmnexReaDS — Palmnex Research and Database System',
+      institution: 'Malaysian Palm Oil Board (MPOB)',
       trialCode: trial.code,
       estate: trial.estate,
       plantingYear: trial.plantingYear,
