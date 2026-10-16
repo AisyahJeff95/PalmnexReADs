@@ -2274,5 +2274,272 @@ textarea.form-control {
   color: #dc2626;
 }
 
+/* ==========================================================================
+   Annual Plot Performance Analytics & Visualization Card
+   ========================================================================== */
+.annual-chart-card {
+  background-color: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.annual-chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 14px;
+}
+
+.annual-chart-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.annual-chart-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chart-header-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--brand-green);
+  flex-shrink: 0;
+}
+
+.annual-chart-title {
+  font-size: 1.12rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.annual-chart-badge {
+  background-color: var(--brand-green-bg);
+  color: var(--brand-green);
+  border: 1px solid var(--brand-green-border);
+  font-weight: 700;
+  font-size: 0.74rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.annual-chart-subtitle {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.annual-chart-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.chart-pill-selector {
+  display: inline-flex;
+  background-color: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 3px;
+  gap: 2px;
+}
+
+.chart-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  font-size: 0.77rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.chart-pill-btn:hover {
+  color: var(--text);
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.chart-pill-btn.active {
+  background-color: #ffffff;
+  color: var(--brand-green);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.pill-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.pill-dot-ffb { background-color: #ea580c; }
+.pill-dot-leaf { background-color: #16a34a; }
+.pill-dot-veg { background-color: #0d9488; }
+.pill-dot-soil { background-color: #854d0e; }
+
+.annual-chart-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition: max-height 0.3s ease, opacity 0.3s ease;
+}
+
+.annual-chart-card.collapsed .annual-chart-body {
+  display: none;
+}
+
+.annual-chart-kpi-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+.chart-kpi-chip {
+  background-color: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.chart-kpi-label {
+  font-size: 0.70rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+}
+
+.chart-kpi-val {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+.chart-kpi-sub {
+  font-size: 0.70rem;
+  color: var(--text-faint);
+}
+
+.annual-chart-svg-container {
+  position: relative;
+  background-color: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 16px 12px 10px;
+  overflow: hidden;
+  min-height: 280px;
+}
+
+.annual-plot-svg {
+  width: 100%;
+  height: 260px;
+  display: block;
+}
+
+.annual-chart-svg-container .chart-tooltip {
+  position: absolute;
+  pointer-events: none;
+  background: rgba(15, 23, 42, 0.94);
+  color: #ffffff;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+  z-index: 20;
+  white-space: nowrap;
+  transform: translate(-50%, -105%);
+  transition: opacity 0.1s ease;
+}
+
+.chart-tooltip-title {
+  font-weight: 700;
+  font-size: 0.8rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding-bottom: 4px;
+  margin-bottom: 4px;
+  color: #f8fafc;
+}
+
+.chart-tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: #cbd5e1;
+}
+
+.chart-tooltip-row strong {
+  color: #ffffff;
+}
+
+.annual-chart-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  border-top: 1px solid #f1f5f9;
+  padding-top: 10px;
+}
+
+.chart-legend {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+.legend-line {
+  width: 18px;
+  height: 0;
+  border-top: 2px dashed;
+  display: inline-block;
+}
+
+.chart-hint {
+  font-size: 0.72rem;
+  color: var(--text-faint);
+  font-style: italic;
+}
+
 
 

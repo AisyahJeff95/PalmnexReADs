@@ -219,6 +219,73 @@
     <!-- Operations Dashboard -->
     <div class="workspace-container">
 
+      <!-- ================= Annual Plot Performance Analytics Card ================= -->
+      <section class="annual-chart-card" id="annual-chart-card" aria-label="Annual Plot Performance Analytics">
+        <div class="annual-chart-header">
+          <div class="annual-chart-title-group">
+            <div class="annual-chart-title-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="chart-header-icon"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+              <h2 class="annual-chart-title">Annual Plot Performance Analytics</h2>
+              <span class="annual-chart-badge" id="chart-trial-badge">DTP1</span>
+            </div>
+            <p class="annual-chart-subtitle">
+              Live multi-disciplinary plot comparisons against trial averages and MPOB agronomic benchmarks.
+            </p>
+          </div>
+
+          <!-- Controls & Metric Selector Tabs -->
+          <div class="annual-chart-controls">
+            <div class="chart-pill-selector" role="tablist" aria-label="Select Plot Metric to Visualize">
+              <button type="button" class="chart-pill-btn active" data-chart-metric="ffb">
+                <span class="pill-dot pill-dot-ffb"></span>
+                FFB Yield (t/ha)
+              </button>
+              <button type="button" class="chart-pill-btn" data-chart-metric="leaf">
+                <span class="pill-dot pill-dot-leaf"></span>
+                Foliar Nutrients (N, P, K, Mg)
+              </button>
+              <button type="button" class="chart-pill-btn" data-chart-metric="veg">
+                <span class="pill-dot pill-dot-veg"></span>
+                Canopy LAI &amp; FDW
+              </button>
+              <button type="button" class="chart-pill-btn" data-chart-metric="soil">
+                <span class="pill-dot pill-dot-soil"></span>
+                Soil Chemistry (pH &amp; CEC)
+              </button>
+            </div>
+
+            <button type="button" class="btn btn-secondary-outline btn-sm" id="btn-toggle-chart-collapse" title="Collapse / Expand Visualizer" style="font-size: 0.76rem; padding: 4px 10px; display: inline-flex; align-items: center; gap: 5px;">
+              <svg id="chart-collapse-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 13px; height: 13px;"><polyline points="6 9 12 15 18 9"/></svg>
+              <span id="chart-collapse-label">Minimize</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Collapsible Body -->
+        <div class="annual-chart-body" id="annual-chart-body">
+          <!-- KPI Insight Bar -->
+          <div class="annual-chart-kpi-bar" id="annual-chart-kpi-bar">
+            <!-- Populated dynamically -->
+          </div>
+
+          <!-- Responsive SVG Chart Canvas -->
+          <div class="annual-chart-svg-container" id="annual-chart-svg-container">
+            <svg id="annual-plot-svg" viewBox="0 0 900 300" class="annual-plot-svg"></svg>
+            <div class="chart-tooltip" id="annual-chart-tooltip" style="display: none;"></div>
+          </div>
+
+          <!-- Legend and Guidance Note -->
+          <div class="annual-chart-footer" id="annual-chart-footer">
+            <div class="chart-legend" id="annual-chart-legend">
+              <!-- Populated dynamically -->
+            </div>
+            <div class="chart-hint">
+              Hover over any plot column for detailed field parameters and treatment values.
+            </div>
+          </div>
+        </div>
+      </section>
+
       <div style="background-color: #ffffff; border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 24px;">
         
         <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 16px;">

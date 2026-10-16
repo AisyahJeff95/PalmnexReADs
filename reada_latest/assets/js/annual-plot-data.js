@@ -30,6 +30,8 @@
   let currentCode = localStorage.getItem('reada_active_trial') || 'DTP1';
   let activeCategory = 'ffb'; // 'ffb' | 'leaf' | 'veg' | 'soil'
   let activePlotFilter = 'all';
+  let chartActiveMetric = 'ffb'; // 'ffb' | 'leaf' | 'veg' | 'soil'
+  let isChartCollapsed = false;
 
   // Category Configuration & Labels
   const categoryConfig = {
@@ -92,7 +94,18 @@
     tbodySummary: document.getElementById('tbody-annual-summary'),
     tfootSummary: document.getElementById('tfoot-annual-summary'),
     toast: document.getElementById('toast'),
-    toastMsg: document.getElementById('toast-msg')
+    toastMsg: document.getElementById('toast-msg'),
+    annualChartCard: document.getElementById('annual-chart-card'),
+    chartTrialBadge: document.getElementById('chart-trial-badge'),
+    chartPillBtns: document.querySelectorAll('.chart-pill-btn'),
+    btnToggleChartCollapse: document.getElementById('btn-toggle-chart-collapse'),
+    chartCollapseIcon: document.getElementById('chart-collapse-icon'),
+    chartCollapseLabel: document.getElementById('chart-collapse-label'),
+    annualChartKpiBar: document.getElementById('annual-chart-kpi-bar'),
+    annualPlotSvg: document.getElementById('annual-plot-svg'),
+    annualChartSvgContainer: document.getElementById('annual-chart-svg-container'),
+    annualChartTooltip: document.getElementById('annual-chart-tooltip'),
+    annualChartLegend: document.getElementById('annual-chart-legend')
   };
 
   // Modals cache
@@ -636,10 +649,868 @@
     }
   }
 
+  // ================= Annual Plot Performance Analytics & Visualization =================
+
+  function showTooltip(e, html) {
+    if (!el.annualChartTooltip || !el.annualChartSvgContainer) return;
+    el.annualChartTooltip.innerHTML = html;
+    moveTooltip(e);
+    el.annualChartTooltip.style.display = 'block';
+  }
+
+  function moveTooltip(e) {
+    if (!el.annualChartTooltip || !el.annualChartSvgContainer) return;
+    const rect = el.annualChartSvgContainer.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    el.annualChartTooltip.style.left = `${x}px`;
+    el.annualChartTooltip.style.top = `${y}px`;
+  }
+
+  function hideTooltip() {
+    if (el.annualChartTooltip) {
+      el.annualChartTooltip.style.display = 'none';
+    }
+  }
+
+  function renderAnnualChart() {
+    const trial = getCurrentTrial();
+    if (!trial) return;
+
+    if (el.chartTrialBadge) {
+      el.chartTrialBadge.textContent = trial.code;
+    }
+
+    if (!el.annualPlotSvg || !el.annualChartKpiBar) return;
+
+    // Reset container contents
+    el.annualPlotSvg.innerHTML = '';
+    el.annualChartKpiBar.innerHTML = '';
+    if (el.annualChartLegend) el.annualChartLegend.innerHTML = '';
+
+    const width = 900;
+    const height = 300;
+    const padLeft = 60;
+    const padRight = 35;
+    const padTop = 30;
+    const padBottom = 45;
+    const plotW = width - padLeft - padRight;
+    const plotH = height - padTop - padBottom;
+
+    function createSvgElem(tag, attrs = {}) {
+      const elem = document.createElementNS('http://www.w3.org/2000/svg', tag);
+      for (const [k, v] of Object.entries(attrs)) {
+        elem.setAttribute(k, v);
+      }
+      return elem;
+    }
+
+    // Gradients definition
+    const defs = createSvgElem('defs');
+    defs.innerHTML = `
+      <linearGradient id="grad-bar-green" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#16a34a" />
+        <stop offset="100%" stop-color="#15803d" />
+      </linearGradient>
+      <linearGradient id="grad-bar-amber" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#f59e0b" />
+        <stop offset="100%" stop-color="#d97706" />
+      </linearGradient>
+      <linearGradient id="grad-bar-teal" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#14b8a6" />
+        <stop offset="100%" stop-color="#0f766e" />
+      </linearGradient>
+      <linearGradient id="grad-bar-blue" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#3b82f6" />
+        <stop offset="100%" stop-color="#1d4ed8" />
+      </linearGradient>
+      <linearGradient id="grad-bar-soil" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#a16207" />
+        <stop offset="100%" stop-color="#854d0e" />
+      </linearGradient>
+    `;
+    el.annualPlotSvg.appendChild(defs);
+
+    // Background panel
+    const bgRect = createSvgElem('rect', {
+      x: padLeft,
+      y: padTop,
+      width: plotW,
+      height: plotH,
+      fill: '#fcfdfd',
+      rx: 4
+    });
+    el.annualPlotSvg.appendChild(bgRect);
+
+    if (chartActiveMetric === 'ffb') {
+      const ffbData = trial.annualPlotData.ffb || [];
+      if (ffbData.length === 0) return;
+
+      const yields = ffbData.map(d => parseFloat(d.ffbYield) || 0);
+      const meanYield = Number((yields.reduce((a, b) => a + b, 0) / yields.length).toFixed(1));
+      let maxItem = ffbData[0];
+      let minItem = ffbData[0];
+      ffbData.forEach(d => {
+        if ((parseFloat(d.ffbYield) || 0) > (parseFloat(maxItem.ffbYield) || 0)) maxItem = d;
+        if ((parseFloat(d.ffbYield) || 0) < (parseFloat(minItem.ffbYield) || 0)) minItem = d;
+      });
+
+      const maxVal = Math.max(...yields, 50);
+      const yMax = Math.ceil(maxVal / 10) * 10;
+      const benchmark = 30.0;
+
+      // KPI chips
+      el.annualChartKpiBar.innerHTML = `
+        <div class="chart-kpi-chip">
+          <span class="chart-kpi-label">Trial Mean FFB Yield</span>
+          <span class="chart-kpi-val" style="color: var(--brand-green);">${meanYield} <span style="font-size: 0.72rem; font-weight: 500;">t/ha</span></span>
+          <span class="chart-kpi-sub">Across ${ffbData.length} recording plots</span>
+        </div>
+        <div class="chart-kpi-chip">
+          <span class="chart-kpi-label">Top Performing Plot</span>
+          <span class="chart-kpi-val" style="color: #15803d;">Plot ${maxItem.plot} · ${maxItem.ffbYield} <span style="font-size: 0.72rem; font-weight: 500;">t/ha</span></span>
+          <span class="chart-kpi-sub">+${(((maxItem.ffbYield - meanYield) / meanYield) * 100).toFixed(1)}% vs trial mean</span>
+        </div>
+        <div class="chart-kpi-chip">
+          <span class="chart-kpi-label">Lowest Performing Plot</span>
+          <span class="chart-kpi-val" style="color: #d97706;">Plot ${minItem.plot} · ${minItem.ffbYield} <span style="font-size: 0.72rem; font-weight: 500;">t/ha</span></span>
+          <span class="chart-kpi-sub">${(((minItem.ffbYield - meanYield) / meanYield) * 100).toFixed(1)}% vs trial mean</span>
+        </div>
+        <div class="chart-kpi-chip">
+          <span class="chart-kpi-label">Commercial Benchmark</span>
+          <span class="chart-kpi-val" style="color: var(--text);">${benchmark.toFixed(1)} <span style="font-size: 0.72rem; font-weight: 500;">t/ha</span></span>
+          <span class="chart-kpi-sub">All plots exceeding standard</span>
+        </div>
+      `;
+
+      // Y-axis grid
+      for (let yVal = 0; yVal <= yMax; yVal += 10) {
+        const yPos = padTop + plotH - (yVal / yMax) * plotH;
+        const grid = createSvgElem('line', {
+          x1: padLeft,
+          y1: yPos,
+          x2: padLeft + plotW,
+          y2: yPos,
+          stroke: '#e2e8f0',
+          'stroke-dasharray': yVal === 0 ? 'none' : '3 3'
+        });
+        el.annualPlotSvg.appendChild(grid);
+
+        const txt = createSvgElem('text', {
+          x: padLeft - 10,
+          y: yPos + 4,
+          'text-anchor': 'end',
+          fill: '#64748b',
+          'font-size': '11px',
+          'font-family': 'var(--font-mono)'
+        });
+        txt.textContent = yVal;
+        el.annualPlotSvg.appendChild(txt);
+      }
+
+      // Benchmark dashed line (30 t/ha)
+      if (benchmark <= yMax) {
+        const benchY = padTop + plotH - (benchmark / yMax) * plotH;
+        const bLine = createSvgElem('line', {
+          x1: padLeft,
+          y1: benchY,
+          x2: padLeft + plotW,
+          y2: benchY,
+          stroke: '#f59e0b',
+          'stroke-width': 1.5,
+          'stroke-dasharray': '5 4'
+        });
+        el.annualPlotSvg.appendChild(bLine);
+
+        const bText = createSvgElem('text', {
+          x: padLeft + plotW - 6,
+          y: benchY - 4,
+          'text-anchor': 'end',
+          fill: '#b45309',
+          'font-size': '10px',
+          'font-weight': '600'
+        });
+        bText.textContent = `Target: ${benchmark} t/ha`;
+        el.annualPlotSvg.appendChild(bText);
+      }
+
+      // Mean dashed line
+      if (meanYield <= yMax) {
+        const meanY = padTop + plotH - (meanYield / yMax) * plotH;
+        const mLine = createSvgElem('line', {
+          x1: padLeft,
+          y1: meanY,
+          x2: padLeft + plotW,
+          y2: meanY,
+          stroke: '#16a34a',
+          'stroke-width': 2,
+          'stroke-dasharray': '6 4'
+        });
+        el.annualPlotSvg.appendChild(mLine);
+
+        const mText = createSvgElem('text', {
+          x: padLeft + 10,
+          y: meanY - 5,
+          'text-anchor': 'start',
+          fill: '#15803d',
+          'font-size': '11px',
+          'font-weight': '700'
+        });
+        mText.textContent = `Trial Mean: ${meanYield} t/ha`;
+        el.annualPlotSvg.appendChild(mText);
+      }
+
+      // Bars
+      const n = ffbData.length;
+      const slotW = plotW / n;
+      const barW = Math.min(Math.max(slotW * 0.55, 24), 56);
+
+      ffbData.forEach((d, idx) => {
+        const yVal = parseFloat(d.ffbYield) || 0;
+        const barH = (yVal / yMax) * plotH;
+        const barX = padLeft + (idx * slotW) + (slotW - barW) / 2;
+        const barY = padTop + plotH - barH;
+        const isAboveMean = yVal >= meanYield;
+
+        const rect = createSvgElem('rect', {
+          x: barX,
+          y: barY,
+          width: barW,
+          height: barH,
+          fill: isAboveMean ? 'url(#grad-bar-green)' : 'url(#grad-bar-amber)',
+          rx: 4,
+          ry: 4,
+          style: 'cursor: pointer; transition: opacity 0.15s ease;'
+        });
+
+        rect.addEventListener('mouseenter', (e) => {
+          rect.style.opacity = '0.85';
+          showTooltip(e, `
+            <div class="chart-tooltip-title">Plot ${d.plot} · FFB Annual Yield</div>
+            <div class="chart-tooltip-row"><span>FFB Yield:</span><strong>${d.ffbYield} t/ha</strong></div>
+            <div class="chart-tooltip-row"><span>Bunch Weight (BWT):</span><strong>${d.bwt} kg</strong></div>
+            <div class="chart-tooltip-row"><span>Bunch Number (NOB):</span><strong>${d.nob} b/p</strong></div>
+            <div class="chart-tooltip-row"><span>Palm Yield:</span><strong>${d.palmYield} kg/palm</strong></div>
+            <div class="chart-tooltip-row"><span>Density:</span><strong>${getTrialDensity(trial, d.plot)} palms/ha</strong></div>
+          `);
+        });
+        rect.addEventListener('mousemove', moveTooltip);
+        rect.addEventListener('mouseleave', () => {
+          rect.style.opacity = '1';
+          hideTooltip();
+        });
+
+        el.annualPlotSvg.appendChild(rect);
+
+        // Value text
+        const valText = createSvgElem('text', {
+          x: barX + barW / 2,
+          y: barY - 6,
+          'text-anchor': 'middle',
+          fill: isAboveMean ? '#15803d' : '#b45309',
+          'font-size': '11px',
+          'font-weight': '700',
+          'font-family': 'var(--font-mono)'
+        });
+        valText.textContent = d.ffbYield;
+        el.annualPlotSvg.appendChild(valText);
+
+        // X label
+        const xText = createSvgElem('text', {
+          x: barX + barW / 2,
+          y: padTop + plotH + 20,
+          'text-anchor': 'middle',
+          fill: '#334155',
+          'font-size': '11px',
+          'font-weight': '600'
+        });
+        xText.textContent = `Plot ${d.plot}`;
+        el.annualPlotSvg.appendChild(xText);
+      });
+
+      // Legend
+      el.annualChartLegend.innerHTML = `
+        <div class="legend-item">
+          <span class="legend-swatch" style="background: linear-gradient(135deg, #16a34a, #15803d);"></span>
+          <span>Yield &ge; Mean (${meanYield} t/ha)</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-swatch" style="background: linear-gradient(135deg, #f59e0b, #d97706);"></span>
+          <span>Yield &lt; Mean</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-line" style="border-color: #16a34a; border-width: 2px;"></span>
+          <span>Trial Mean</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-line" style="border-color: #f59e0b; border-width: 1.5px;"></span>
+          <span>Commercial Target (30 t/ha)</span>
+        </div>
+      `;
+
+    } else if (chartActiveMetric === 'leaf') {
+      const leafData = trial.annualPlotData.leaf || [];
+      if (leafData.length === 0) return;
+
+      const meanN = formatAverage(leafData, 'n', 2);
+      const meanK = formatAverage(leafData, 'k', 2);
+      const meanP = formatAverage(leafData, 'p', 3);
+      const meanMg = formatAverage(leafData, 'mg', 2);
+
+      const yMax = 3.5;
+      const critN = 2.60;
+      const critK = 1.00;
+
+      el.annualChartKpiBar.innerHTML = `
+        <div class="chart-kpi-chip">
+          <span class="chart-kpi-label">Mean F17 Leaf Nitrogen</span>
+          <span class="chart-kpi-val" style="color: #15803d;">${meanN}%</span>
+          <span class="chart-kpi-sub">Critical threshold &ge; 2.60% (Optimal)</span>
+        </div>
+        <div class="chart-kpi-chip">
+          <span class="chart-kpi-label">Mean Foliar Potassium</span>
+          <span class="chart-kpi-val" style="color: #2563eb;">${meanK}%</span>
+          <span class="chart-kpi-sub">Critical threshold &ge; 1.00% (Adequate)</span>
+        </div>
+        <div class="chart-kpi-chip">
+          <span class="chart-kpi-label">Mean Foliar Phosphorus</span>
+          <span class="chart-kpi-val" style="color: var(--text);">${meanP}%</span>
+          <span class="chart-kpi-sub">Optimum: 0.150% — 0.180%</span>
+        </div>
+        <div class="chart-kpi-chip">
+          <span class="chart-kpi-label">Mean Foliar Magnesium</span>
+          <span class="chart-kpi-val" style="color: #0d9488;">${meanMg}%</span>
+          <span class="chart-kpi-sub">Optimum threshold &ge; 0.25%</span>
+        </div>
+      `;
+
+      // Y-axis grid
+      const steps = [0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5];
+      steps.forEach(yVal => {
+        const yPos = padTop + plotH - (yVal / yMax) * plotH;
+        const grid = createSvgElem('line', {
+          x1: padLeft,
+          y1: yPos,
+          x2: padLeft + plotW,
+          y2: yPos,
+          stroke: '#e2e8f0',
+          'stroke-dasharray': yVal === 0 ? 'none' : '3 3'
+        });
+        el.annualPlotSvg.appendChild(grid);
+
+        const txt = createSvgElem('text', {
+          x: padLeft - 10,
+          y: yPos + 4,
+          'text-anchor': 'end',
+          fill: '#64748b',
+          'font-size': '11px',
+          'font-family': 'var(--font-mono)'
+        });
+        txt.textContent = yVal.toFixed(1) + '%';
+        el.annualPlotSvg.appendChild(txt);
+      });
+
+      // Critical N line
+      const nCritY = padTop + plotH - (critN / yMax) * plotH;
+      const nLine = createSvgElem('line', {
+        x1: padLeft,
+        y1: nCritY,
+        x2: padLeft + plotW,
+        y2: nCritY,
+        stroke: '#16a34a',
+        'stroke-width': 1.5,
+        'stroke-dasharray': '5 4'
+      });
+      el.annualPlotSvg.appendChild(nLine);
+
+      const nText = createSvgElem('text', {
+        x: padLeft + plotW - 6,
+        y: nCritY - 4,
+        'text-anchor': 'end',
+        fill: '#15803d',
+        'font-size': '10px',
+        'font-weight': '600'
+      });
+      nText.textContent = `N Critical: 2.60%`;
+      el.annualPlotSvg.appendChild(nText);
+
+      // Critical K line
+      const kCritY = padTop + plotH - (critK / yMax) * plotH;
+      const kLine = createSvgElem('line', {
+        x1: padLeft,
+        y1: kCritY,
+        x2: padLeft + plotW,
+        y2: kCritY,
+        stroke: '#3b82f6',
+        'stroke-width': 1.5,
+        'stroke-dasharray': '5 4'
+      });
+      el.annualPlotSvg.appendChild(kLine);
+
+      const kText = createSvgElem('text', {
+        x: padLeft + 10,
+        y: kCritY - 4,
+        'text-anchor': 'start',
+        fill: '#1d4ed8',
+        'font-size': '10px',
+        'font-weight': '600'
+      });
+      kText.textContent = `K Critical: 1.00%`;
+      el.annualPlotSvg.appendChild(kText);
+
+      // Grouped bars
+      const n = leafData.length;
+      const slotW = plotW / n;
+      const barW = Math.min(slotW * 0.32, 24);
+
+      leafData.forEach((d, idx) => {
+        const nVal = parseFloat(d.n) || 0;
+        const kVal = parseFloat(d.k) || 0;
+        const nH = (nVal / yMax) * plotH;
+        const kH = (kVal / yMax) * plotH;
+
+        const slotCenter = padLeft + (idx * slotW) + slotW / 2;
+        const nX = slotCenter - barW - 2;
+        const kX = slotCenter + 2;
+        const nY = padTop + plotH - nH;
+        const kY = padTop + plotH - kH;
+
+        const rectN = createSvgElem('rect', {
+          x: nX,
+          y: nY,
+          width: barW,
+          height: nH,
+          fill: 'url(#grad-bar-green)',
+          rx: 3,
+          ry: 3,
+          style: 'cursor: pointer;'
+        });
+
+        const rectK = createSvgElem('rect', {
+          x: kX,
+          y: kY,
+          width: barW,
+          height: kH,
+          fill: 'url(#grad-bar-blue)',
+          rx: 3,
+          ry: 3,
+          style: 'cursor: pointer;'
+        });
+
+        const showLeafTip = (e) => {
+          showTooltip(e, `
+            <div class="chart-tooltip-title">Plot ${d.plot} · Foliar Nutrients (Frond 17)</div>
+            <div class="chart-tooltip-row"><span>Nitrogen (N):</span><strong>${d.n}%</strong></div>
+            <div class="chart-tooltip-row"><span>Phosphorus (P):</span><strong>${d.p}%</strong></div>
+            <div class="chart-tooltip-row"><span>Potassium (K):</span><strong>${d.k}%</strong></div>
+            <div class="chart-tooltip-row"><span>Magnesium (Mg):</span><strong>${d.mg}%</strong></div>
+            <div class="chart-tooltip-row"><span>Calcium (Ca):</span><strong>${d.ca}%</strong></div>
+            <div class="chart-tooltip-row"><span>Boron (B):</span><strong>${d.b} ppm</strong></div>
+          `);
+        };
+
+        [rectN, rectK].forEach(r => {
+          r.addEventListener('mouseenter', showLeafTip);
+          r.addEventListener('mousemove', moveTooltip);
+          r.addEventListener('mouseleave', hideTooltip);
+        });
+
+        el.annualPlotSvg.appendChild(rectN);
+        el.annualPlotSvg.appendChild(rectK);
+
+        // Labels
+        const lblN = createSvgElem('text', {
+          x: nX + barW / 2,
+          y: nY - 4,
+          'text-anchor': 'middle',
+          fill: '#15803d',
+          'font-size': '9.5px',
+          'font-weight': '700'
+        });
+        lblN.textContent = d.n;
+        el.annualPlotSvg.appendChild(lblN);
+
+        const lblK = createSvgElem('text', {
+          x: kX + barW / 2,
+          y: kY - 4,
+          'text-anchor': 'middle',
+          fill: '#1d4ed8',
+          'font-size': '9.5px',
+          'font-weight': '700'
+        });
+        lblK.textContent = d.k;
+        el.annualPlotSvg.appendChild(lblK);
+
+        // X label
+        const xText = createSvgElem('text', {
+          x: slotCenter,
+          y: padTop + plotH + 20,
+          'text-anchor': 'middle',
+          fill: '#334155',
+          'font-size': '11px',
+          'font-weight': '600'
+        });
+        xText.textContent = `Plot ${d.plot}`;
+        el.annualPlotSvg.appendChild(xText);
+      });
+
+      // Legend
+      el.annualChartLegend.innerHTML = `
+        <div class="legend-item">
+          <span class="legend-swatch" style="background: linear-gradient(135deg, #16a34a, #15803d);"></span>
+          <span>Leaf N% (Critical &ge; 2.60%)</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-swatch" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);"></span>
+          <span>Leaf K% (Critical &ge; 1.00%)</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-line" style="border-color: #16a34a; border-width: 1.5px;"></span>
+          <span>N Critical (2.60%)</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-line" style="border-color: #3b82f6; border-width: 1.5px;"></span>
+          <span>K Critical (1.00%)</span>
+        </div>
+      `;
+
+    } else if (chartActiveMetric === 'veg') {
+      const vegData = trial.annualPlotData.veg || [];
+      if (vegData.length === 0) return;
+
+      const meanLai = formatAverage(vegData, 'lai', 2);
+      const meanFdw = formatAverage(vegData, 'fdw', 2);
+      const meanArea = formatAverage(vegData, 'leafArea', 2);
+      const meanRachis = formatAverage(vegData, 'rachisLen', 1);
+
+      const yMax = 7.0;
+      const targetLai = 5.50;
+
+      el.annualChartKpiBar.innerHTML = `
+        <div class="chart-kpi-chip">
+          <span class="chart-kpi-label">Mean Canopy LAI</span>
+          <span class="chart-kpi-val" style="color: #0d9488;">${meanLai}</span>
+          <span class="chart-kpi-sub">Target: ~5.50 full interception</span>
+        </div>
+        <div class="chart-kpi-chip">
+          <span class="chart-kpi-label">Frond Dry Weight (FDW)</span>
+          <span class="chart-kpi-val" style="color: var(--brand-green);">${meanFdw} <span style="font-size: 0.72rem; font-weight: 500;">kg</span></span>
+          <span class="chart-kpi-sub">Mean petiole area biomass</span>
+        </div>
+        <div class="chart-kpi-chip">
+          <span class="chart-kpi-label">Individual Leaf Area</span>
+          <span class="chart-kpi-val" style="color: var(--text);">${meanArea} <span style="font-size: 0.72rem; font-weight: 500;">m²</span></span>
+          <span class="chart-kpi-sub">Calculated for Frond 17</span>
+        </div>
+        <div class="chart-kpi-chip">
+          <span class="chart-kpi-label">Mean Rachis Length</span>
+          <span class="chart-kpi-val" style="color: var(--text);">${meanRachis} <span style="font-size: 0.72rem; font-weight: 500;">cm</span></span>
+          <span class="chart-kpi-sub">Vigorous frond elongation</span>
+        </div>
+      `;
+
+      // Y-axis grid
+      const steps = [0, 1, 2, 3, 4, 5, 6, 7];
+      steps.forEach(yVal => {
+        const yPos = padTop + plotH - (yVal / yMax) * plotH;
+        const grid = createSvgElem('line', {
+          x1: padLeft,
+          y1: yPos,
+          x2: padLeft + plotW,
+          y2: yPos,
+          stroke: '#e2e8f0',
+          'stroke-dasharray': yVal === 0 ? 'none' : '3 3'
+        });
+        el.annualPlotSvg.appendChild(grid);
+
+        const txt = createSvgElem('text', {
+          x: padLeft - 10,
+          y: yPos + 4,
+          'text-anchor': 'end',
+          fill: '#64748b',
+          'font-size': '11px',
+          'font-family': 'var(--font-mono)'
+        });
+        txt.textContent = yVal.toFixed(1);
+        el.annualPlotSvg.appendChild(txt);
+      });
+
+      // Target LAI line (5.5)
+      const tLaiY = padTop + plotH - (targetLai / yMax) * plotH;
+      const tLine = createSvgElem('line', {
+        x1: padLeft,
+        y1: tLaiY,
+        x2: padLeft + plotW,
+        y2: tLaiY,
+        stroke: '#0d9488',
+        'stroke-width': 2,
+        'stroke-dasharray': '5 4'
+      });
+      el.annualPlotSvg.appendChild(tLine);
+
+      const tText = createSvgElem('text', {
+        x: padLeft + plotW - 6,
+        y: tLaiY - 4,
+        'text-anchor': 'end',
+        fill: '#0f766e',
+        'font-size': '10px',
+        'font-weight': '700'
+      });
+      tText.textContent = `Full Canopy Closure (LAI 5.5)`;
+      el.annualPlotSvg.appendChild(tText);
+
+      // Bars
+      const n = vegData.length;
+      const slotW = plotW / n;
+      const barW = Math.min(Math.max(slotW * 0.55, 24), 56);
+
+      vegData.forEach((d, idx) => {
+        const yVal = parseFloat(d.lai) || 0;
+        const barH = (yVal / yMax) * plotH;
+        const barX = padLeft + (idx * slotW) + (slotW - barW) / 2;
+        const barY = padTop + plotH - barH;
+
+        const rect = createSvgElem('rect', {
+          x: barX,
+          y: barY,
+          width: barW,
+          height: barH,
+          fill: 'url(#grad-bar-teal)',
+          rx: 4,
+          ry: 4,
+          style: 'cursor: pointer;'
+        });
+
+        rect.addEventListener('mouseenter', (e) => {
+          rect.style.opacity = '0.85';
+          showTooltip(e, `
+            <div class="chart-tooltip-title">Plot ${d.plot} · Vegetative Morphometrics</div>
+            <div class="chart-tooltip-row"><span>Canopy LAI:</span><strong>${d.lai}</strong></div>
+            <div class="chart-tooltip-row"><span>Frond Dry Weight (FDW):</span><strong>${d.fdw} kg</strong></div>
+            <div class="chart-tooltip-row"><span>Leaf Area:</span><strong>${d.leafArea} m²</strong></div>
+            <div class="chart-tooltip-row"><span>Rachis Length:</span><strong>${d.rachisLen} cm</strong></div>
+            <div class="chart-tooltip-row"><span>Petiole Area:</span><strong>${d.petioleArea} cm²</strong></div>
+            <div class="chart-tooltip-row"><span>Pinnae Count:</span><strong>${d.pinnae}</strong></div>
+          `);
+        });
+        rect.addEventListener('mousemove', moveTooltip);
+        rect.addEventListener('mouseleave', () => {
+          rect.style.opacity = '1';
+          hideTooltip();
+        });
+
+        el.annualPlotSvg.appendChild(rect);
+
+        // Value text
+        const valText = createSvgElem('text', {
+          x: barX + barW / 2,
+          y: barY - 6,
+          'text-anchor': 'middle',
+          fill: '#0f766e',
+          'font-size': '11px',
+          'font-weight': '700',
+          'font-family': 'var(--font-mono)'
+        });
+        valText.textContent = d.lai;
+        el.annualPlotSvg.appendChild(valText);
+
+        // X label
+        const xText = createSvgElem('text', {
+          x: barX + barW / 2,
+          y: padTop + plotH + 20,
+          'text-anchor': 'middle',
+          fill: '#334155',
+          'font-size': '11px',
+          'font-weight': '600'
+        });
+        xText.textContent = `Plot ${d.plot}`;
+        el.annualPlotSvg.appendChild(xText);
+      });
+
+      // Legend
+      el.annualChartLegend.innerHTML = `
+        <div class="legend-item">
+          <span class="legend-swatch" style="background: linear-gradient(135deg, #14b8a6, #0f766e);"></span>
+          <span>Canopy Leaf Area Index (LAI)</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-line" style="border-color: #0d9488; border-width: 2px;"></span>
+          <span>Optimal Commercial Canopy Target (5.50)</span>
+        </div>
+      `;
+
+    } else if (chartActiveMetric === 'soil') {
+      const soilData = trial.annualPlotData.soil || [];
+      if (soilData.length === 0) return;
+
+      const meanPh = formatAverage(soilData, 'ph', 2);
+      const meanCec = formatAverage(soilData, 'cec', 1);
+      const meanOrgC = formatAverage(soilData, 'orgC', 2);
+      const meanExtrP = formatAverage(soilData, 'extrP', 1);
+
+      const yMax = 7.0;
+
+      el.annualChartKpiBar.innerHTML = `
+        <div class="chart-kpi-chip">
+          <span class="chart-kpi-label">Mean Soil pH (H₂O)</span>
+          <span class="chart-kpi-val" style="color: #854d0e;">${meanPh}</span>
+          <span class="chart-kpi-sub">Typical mineral soil range: 4.2 — 5.0</span>
+        </div>
+        <div class="chart-kpi-chip">
+          <span class="chart-kpi-label">Cation Exchange Capacity (CEC)</span>
+          <span class="chart-kpi-val" style="color: var(--brand-green);">${meanCec} <span style="font-size: 0.72rem; font-weight: 500;">cmol/kg</span></span>
+          <span class="chart-kpi-sub">Nutrient retention buffer</span>
+        </div>
+        <div class="chart-kpi-chip">
+          <span class="chart-kpi-label">Organic Carbon (C)</span>
+          <span class="chart-kpi-val" style="color: var(--text);">${meanOrgC}%</span>
+          <span class="chart-kpi-sub">Surface topsoil (0-15 cm)</span>
+        </div>
+        <div class="chart-kpi-chip">
+          <span class="chart-kpi-label">Extractable Phosphorus</span>
+          <span class="chart-kpi-val" style="color: #ea580c;">${meanExtrP} <span style="font-size: 0.72rem; font-weight: 500;">ppm</span></span>
+          <span class="chart-kpi-sub">Available P (Bray II)</span>
+        </div>
+      `;
+
+      // Y-axis grid
+      const steps = [0, 1, 2, 3, 4, 5, 6, 7];
+      steps.forEach(yVal => {
+        const yPos = padTop + plotH - (yVal / yMax) * plotH;
+        const grid = createSvgElem('line', {
+          x1: padLeft,
+          y1: yPos,
+          x2: padLeft + plotW,
+          y2: yPos,
+          stroke: '#e2e8f0',
+          'stroke-dasharray': yVal === 0 ? 'none' : '3 3'
+        });
+        el.annualPlotSvg.appendChild(grid);
+
+        const txt = createSvgElem('text', {
+          x: padLeft - 10,
+          y: yPos + 4,
+          'text-anchor': 'end',
+          fill: '#64748b',
+          'font-size': '11px',
+          'font-family': 'var(--font-mono)'
+        });
+        txt.textContent = yVal.toFixed(1);
+        el.annualPlotSvg.appendChild(txt);
+      });
+
+      // Target pH Band Line (4.5)
+      const phY = padTop + plotH - (4.5 / yMax) * plotH;
+      const phLine = createSvgElem('line', {
+        x1: padLeft,
+        y1: phY,
+        x2: padLeft + plotW,
+        y2: phY,
+        stroke: '#854d0e',
+        'stroke-width': 1.5,
+        'stroke-dasharray': '5 4'
+      });
+      el.annualPlotSvg.appendChild(phLine);
+
+      const phText = createSvgElem('text', {
+        x: padLeft + plotW - 6,
+        y: phY - 4,
+        'text-anchor': 'end',
+        fill: '#854d0e',
+        'font-size': '10px',
+        'font-weight': '600'
+      });
+      phText.textContent = `Target pH: 4.5 (H₂O)`;
+      el.annualPlotSvg.appendChild(phText);
+
+      // Bars
+      const n = soilData.length;
+      const slotW = plotW / n;
+      const barW = Math.min(Math.max(slotW * 0.55, 24), 56);
+
+      soilData.forEach((d, idx) => {
+        const yVal = parseFloat(d.ph) || 0;
+        const barH = (yVal / yMax) * plotH;
+        const barX = padLeft + (idx * slotW) + (slotW - barW) / 2;
+        const barY = padTop + plotH - barH;
+
+        const rect = createSvgElem('rect', {
+          x: barX,
+          y: barY,
+          width: barW,
+          height: barH,
+          fill: 'url(#grad-bar-soil)',
+          rx: 4,
+          ry: 4,
+          style: 'cursor: pointer;'
+        });
+
+        rect.addEventListener('mouseenter', (e) => {
+          rect.style.opacity = '0.85';
+          showTooltip(e, `
+            <div class="chart-tooltip-title">Plot ${d.plot} · Soil Pedology (0-15 cm)</div>
+            <div class="chart-tooltip-row"><span>Soil pH (H₂O):</span><strong>${d.ph}</strong></div>
+            <div class="chart-tooltip-row"><span>CEC:</span><strong>${d.cec} cmol/kg</strong></div>
+            <div class="chart-tooltip-row"><span>Organic Carbon:</span><strong>${d.orgC}%</strong></div>
+            <div class="chart-tooltip-row"><span>Total Nitrogen:</span><strong>${d.totalN}%</strong></div>
+            <div class="chart-tooltip-row"><span>Extractable P:</span><strong>${d.extrP} ppm</strong></div>
+            <div class="chart-tooltip-row"><span>Exchangeable K:</span><strong>${d.exchK} cmol/kg</strong></div>
+            <div class="chart-tooltip-row"><span>Exchangeable Mg:</span><strong>${d.exchMg} cmol/kg</strong></div>
+          `);
+        });
+        rect.addEventListener('mousemove', moveTooltip);
+        rect.addEventListener('mouseleave', () => {
+          rect.style.opacity = '1';
+          hideTooltip();
+        });
+
+        el.annualPlotSvg.appendChild(rect);
+
+        // Value text
+        const valText = createSvgElem('text', {
+          x: barX + barW / 2,
+          y: barY - 6,
+          'text-anchor': 'middle',
+          fill: '#854d0e',
+          'font-size': '11px',
+          'font-weight': '700',
+          'font-family': 'var(--font-mono)'
+        });
+        valText.textContent = d.ph;
+        el.annualPlotSvg.appendChild(valText);
+
+        // X label
+        const xText = createSvgElem('text', {
+          x: barX + barW / 2,
+          y: padTop + plotH + 20,
+          'text-anchor': 'middle',
+          fill: '#334155',
+          'font-size': '11px',
+          'font-weight': '600'
+        });
+        xText.textContent = `Plot ${d.plot}`;
+        el.annualPlotSvg.appendChild(xText);
+      });
+
+      // Legend
+      el.annualChartLegend.innerHTML = `
+        <div class="legend-item">
+          <span class="legend-swatch" style="background: linear-gradient(135deg, #a16207, #854d0e);"></span>
+          <span>Soil pH (H₂O)</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-line" style="border-color: #854d0e; border-width: 1.5px;"></span>
+          <span>Target Acid Soil pH (4.50)</span>
+        </div>
+      `;
+    }
+  }
+
   function renderAll() {
     updateMetricsStrip();
     populatePlotFilter();
     renderSummaryTable();
+    renderAnnualChart();
   }
 
   // ================= Modal 1: New Annual Data Entry (Screenshots 20 & 21) =================
@@ -1787,6 +2658,43 @@
         const cat = btn.getAttribute('data-cat');
         setCategoryTab(cat);
       });
+    });
+
+    // Chart metric tab buttons
+    if (el.chartPillBtns) {
+      el.chartPillBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          el.chartPillBtns.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          chartActiveMetric = btn.dataset.chartMetric;
+          renderAnnualChart();
+        });
+      });
+    }
+
+    // Chart collapse / expand toggle
+    if (el.btnToggleChartCollapse) {
+      el.btnToggleChartCollapse.addEventListener('click', () => {
+        isChartCollapsed = !isChartCollapsed;
+        if (el.annualChartCard) {
+          el.annualChartCard.classList.toggle('collapsed', isChartCollapsed);
+        }
+        if (el.chartCollapseLabel) {
+          el.chartCollapseLabel.textContent = isChartCollapsed ? 'Expand' : 'Minimize';
+        }
+        if (el.chartCollapseIcon) {
+          el.chartCollapseIcon.innerHTML = isChartCollapsed
+            ? '<polyline points="6 9 12 15 18 9"/>'
+            : '<polyline points="6 15 12 9 18 15"/>';
+        }
+      });
+    }
+
+    // Window resize re-render for crisp SVG responsiveness
+    window.addEventListener('resize', () => {
+      if (!isChartCollapsed) {
+        renderAnnualChart();
+      }
     });
 
     // Plot Filter
