@@ -1,9 +1,16 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "cleanUrls": true,
+  "trailingSlash": false,
   "rewrites": [
-    { "source": "/", "destination": "/reada_latest/index.html" },
-    { "source": "/assets/(.*)", "destination": "/reada_latest/assets/$1" },
-    { "source": "/:page.html", "destination": "/reada_latest/:page.html" }
+    { "source": "/assets/(.*)", "destination": "/assets/$1" },
+    { "source": "/raw-data-csv/(.*)", "destination": "/raw-data-csv/$1" },
+    { "source": "/reada_latest/assets/(.*)", "destination": "/assets/$1" },
+    { "source": "/reada_latest/raw-data-csv/(.*)", "destination": "/raw-data-csv/$1" },
+    { "source": "/reada_latest", "destination": "/index.html" },
+    { "source": "/reada_latest/", "destination": "/index.html" },
+    { "source": "/reada_latest/:page.html", "destination": "/:page.html" },
+    { "source": "/reada_latest/:page", "destination": "/:page.html" },
+    { "source": "/:page", "destination": "/:page.html" }
   ]
 }
