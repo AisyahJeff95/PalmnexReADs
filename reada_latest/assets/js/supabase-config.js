@@ -92,6 +92,9 @@ window.ReadaSync = {
           constantDensity: Number(row.constant_density) || local.constantDensity || 148,
           latitude: row.latitude ? Number(row.latitude) : local.latitude,
           longitude: row.longitude ? Number(row.longitude) : local.longitude,
+          userId: row.user_id || null,
+          createdByEmail: row.created_by_email || 'System Baseline',
+          isBaseline: !row.user_id,
           createdAt: row.created_at,
           updatedAt: row.updated_at
         };
@@ -134,6 +137,18 @@ window.ReadaSync = {
     const client = this.getClient();
     if (!client) return { error: 'Supabase client not available' };
 
+    let currentUserId = null;
+    let currentUserEmail = null;
+    try {
+      if (client.auth && typeof client.auth.getSession === 'function') {
+        const { data: sData } = await client.auth.getSession();
+        if (sData && sData.session && sData.session.user) {
+          currentUserId = sData.session.user.id;
+          currentUserEmail = sData.session.user.email;
+        }
+      }
+    } catch (e) {}
+
     const payload = {
       code: trial.code,
       estate: trial.estate,
@@ -147,6 +162,15 @@ window.ReadaSync = {
       longitude: trial.longitude || null,
       updated_at: new Date().toISOString()
     };
+
+    // Attach user ownership if creating a user trial (not system baseline)
+    if (trial.userId) {
+      payload.user_id = trial.userId;
+      if (trial.createdByEmail) payload.created_by_email = trial.createdByEmail;
+    } else if (currentUserId && !trial.isBaseline) {
+      payload.user_id = currentUserId;
+      payload.created_by_email = currentUserEmail || 'Researcher';
+    }
 
     try {
       const { data, error } = await client
