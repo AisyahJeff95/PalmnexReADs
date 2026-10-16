@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PalmnexReaDS — Agronomy Research Portal</title>
-  <meta name="description" content="PalmnexReaDS: MPOB / PORIM Relational Database for Oil Palm Agronomy Research Trials. Comprehensive portal for trial data, yield recording, vegetative sampling, and annual plot analysis.">
+  <title>PalmnexReaDS — Agronomy Research Portal Login</title>
+  <meta name="description" content="PalmnexReaDS: MPOB / PORIM Relational Database for Oil Palm Agronomy Research Trials. Secure Research Station Access Portal.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="assets/css/reada.css">
@@ -101,224 +101,134 @@
     </div>
   </aside>
 
-  <!-- ================= Main Application Area ================= -->
-  <main class="app-main">
+  <!-- ================= Main Area: Full-Window Background Photo with Login Card ================= -->
+  <main class="app-main app-main-login" style="background-image: url('assets/img/palmnex-hero.png');">
+    
+    <!-- Dark Vignette Backdrop Filter -->
+    <div class="login-backdrop-overlay"></div>
 
-    <!-- Top App Header -->
-    <header class="app-header">
-      <div class="header-meta">
-        <h1>PalmnexReaDS Agronomy Portal</h1>
-        <p>MPOB / PORIM Relational Database System for Oil Palm Agronomic Research &amp; Multi-Disciplinary Field Trials.</p>
+    <!-- Center Floating Login Popup Card -->
+    <div class="login-card">
+      <div class="login-card-header">
+        <div class="login-brand-icon">
+          <!-- Oil Palm Icon -->
+          <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width: 28px; height: 28px;">
+            <path d="M16 29V14"/>
+            <path d="M16 14c-2-4-6-6-11-5 3 1 6 3 7 6"/>
+            <path d="M16 14c2-4 6-6 11-5-3 1-6 3-7 6"/>
+            <path d="M16 14c-1-4-4-8-9-10 2 2 4 5 4 9"/>
+            <path d="M16 14c1-4 4-8 9-10-2 2-4 5-4 9"/>
+            <circle cx="16" cy="17" r="1.6" fill="#ea580c" stroke="none"/>
+            <circle cx="14" cy="19" r="1.3" fill="#ea580c" stroke="none"/>
+            <circle cx="18" cy="19" r="1.3" fill="#ea580c" stroke="none"/>
+          </svg>
+        </div>
+        <h1 class="login-title">PalmnexReaDS</h1>
+        <p class="login-subtitle">
+          PALMNEX Research &amp; Database System<br>
+          <span style="font-size: 0.74rem; color: #166534; font-weight: 600;">MPOB Oil Palm Agronomic Research &amp; Database Engine</span>
+        </p>
       </div>
-      <div style="display: flex; gap: 10px; align-items: center;">
-        <span class="badge-tag" style="background-color: var(--brand-green-bg); color: var(--brand-green); border: 1px solid var(--brand-green-border); font-weight: 700; padding: 6px 14px; border-radius: 999px;">
-          ● System Active · V2.0 2026
-        </span>
+
+      <form id="login-form" class="login-form" onsubmit="event.preventDefault(); handleLogin();">
+        <div class="login-field">
+          <label for="login-username" class="login-label">
+            <span>Research Officer / User ID</span>
+            <span style="font-size: 0.72rem; color: var(--text-faint); font-weight: 400;">Station Code</span>
+          </label>
+          <div class="login-input-wrap">
+            <svg class="login-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <input type="text" id="login-username" class="login-input" placeholder="e.g. AG-1024 or Officer Email" value="agronomist@mpob.gov.my" required autocomplete="username">
+          </div>
+        </div>
+
+        <div class="login-field">
+          <label for="login-password" class="login-label">
+            <span>Access Key / Password</span>
+            <a href="javascript:void(0)" onclick="handleForgotPassword()" style="font-size: 0.72rem; color: var(--brand-green); text-decoration: none;">Forgot key?</a>
+          </label>
+          <div class="login-input-wrap">
+            <svg class="login-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <input type="password" id="login-password" class="login-input" placeholder="••••••••••••" value="porim1998" required autocomplete="current-password">
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.78rem; color: var(--text-muted);">
+          <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+            <input type="checkbox" id="login-remember" checked style="accent-color: var(--brand-green);">
+            <span>Remember research station</span>
+          </label>
+          <span style="font-size: 0.72rem; color: var(--text-faint);">V2.0 2026</span>
+        </div>
+
+        <div class="login-actions">
+          <button type="submit" class="login-btn-primary" id="btn-login-submit">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 17px; height: 17px;"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+            <span>Sign In to ReaDA Portal</span>
+          </button>
+          <button type="button" class="login-btn-demo" id="btn-login-guest" onclick="handleGuestAccess()">
+            <span>Direct Access / Researcher Demo &rarr;</span>
+          </button>
+        </div>
+      </form>
+
+      <div class="login-security-notice">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px; color: var(--brand-green); flex-shrink: 0;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <span>Restricted Access: Authorized MPOB / PORIM Agronomy &amp; Plant Nutrition Personnel Only</span>
       </div>
-    </header>
-
-    <div class="home-container">
-
-      <!-- ================= Showcase Hero Banner with Photo ================= -->
-      <section class="home-hero-banner" aria-label="PalmnexReaDS Hero Banner">
-        <div class="home-hero-img-wrap">
-          <img src="assets/img/palmnex-hero.png" alt="PalmnexReaDS - PALMNEX Research and Database System in Oil Palm Plantation" class="home-hero-img">
-        </div>
-        <div class="home-hero-footer-bar">
-          <div class="home-hero-footer-meta">
-            <div class="home-hero-footer-title">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px; color: var(--brand-green);"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-              <span>PalmnexReaDS Software V2.0 2026 by Palmnex</span>
-            </div>
-            <div class="home-hero-footer-sub">
-              MPOB Oil Palm Agronomic Research &amp; Database Engine · Field Census &amp; Laboratory Pedology
-            </div>
-          </div>
-          <div class="home-hero-cta-btns">
-            <a href="list-available-data.html" class="btn btn-primary">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 15px; height: 15px;"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
-              Explore Trial Matrix
-            </a>
-            <a href="annual-plot-data.html" class="btn btn-secondary">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 15px; height: 15px;"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>
-              Annual Plot Data
-            </a>
-          </div>
-        </div>
-      </section>
-
-      <!-- ================= Key Research Network Strip ================= -->
-      <section class="metrics-strip" aria-label="Agronomy Trial Network Metrics">
-        <div class="metric-pill">
-          <span class="metric-val" style="color: var(--brand-green);">10</span>
-          <span class="metric-label">Registered Trials</span>
-        </div>
-        <div class="metric-pill">
-          <span class="metric-val" style="color: #c2410c;">4</span>
-          <span class="metric-label">Research Disciplines</span>
-        </div>
-        <div class="metric-pill">
-          <span class="metric-val" style="color: #0284c7;">1988 — 1998</span>
-          <span class="metric-label">Continuous Horizon</span>
-        </div>
-        <div class="metric-pill">
-          <span class="metric-val" style="color: #15803d;">Hardon &amp; Corley</span>
-          <span class="metric-label">Allometric Model</span>
-        </div>
-        <div class="metric-pill">
-          <span class="metric-val" style="color: #7c3aed;">SAS / GenStat</span>
-          <span class="metric-label">ASCII Export Formats</span>
-        </div>
-      </section>
-
-      <!-- ================= Quick Access Agronomy Modules ================= -->
-      <section class="home-modules-section">
-        <div class="home-section-header">
-          <div>
-            <h2 class="home-section-title">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 20px; height: 20px; color: var(--brand-green);"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-              <span>Agronomy Research Modules</span>
-            </h2>
-            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">
-              Direct access to all 5 core agronomic modules according to the PORIM ReaDA database manual.
-            </p>
-          </div>
-          <span class="home-section-badge">Full Interactive Suite</span>
-        </div>
-
-        <div class="home-modules-grid">
-
-          <!-- Card 1: List of Available Trial Data -->
-          <a href="list-available-data.html" class="home-module-card">
-            <div class="home-module-header">
-              <div class="home-module-icon-box">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 22px; height: 22px;"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
-              </div>
-              <span class="home-module-tag">Module 1</span>
-            </div>
-            <h3 class="home-module-title">List of Available Trial Data</h3>
-            <p class="home-module-desc">
-              Master directory of trial locations with an interactive 11-year timeline matrix tracking yield, foliar, vegetative, and soil datasets.
-            </p>
-            <div class="home-module-footer">
-              <span>Open Trial Matrix</span>
-              <svg class="home-module-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-            </div>
-          </a>
-
-          <!-- Card 2: Main Information -->
-          <a href="trial-main-info.html" class="home-module-card">
-            <div class="home-module-header">
-              <div class="home-module-icon-box">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 22px; height: 22px;"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h6"/></svg>
-              </div>
-              <span class="home-module-tag">Module 2</span>
-            </div>
-            <h3 class="home-module-title">Main Information</h3>
-            <p class="home-module-desc">
-              Experimental design definitions, factorial treatment levels (N, P, K, Mg), planting density setup, and individual palm numbering census.
-            </p>
-            <div class="home-module-footer">
-              <span>Manage Trial Setup</span>
-              <svg class="home-module-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-            </div>
-          </a>
-
-          <!-- Card 3: Yield Recording Program -->
-          <a href="yield-recording.html" class="home-module-card">
-            <div class="home-module-header">
-              <div class="home-module-icon-box">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 22px; height: 22px;"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-              </div>
-              <span class="home-module-tag">Module 3</span>
-            </div>
-            <h3 class="home-module-title">Yield Recording Program</h3>
-            <p class="home-module-desc">
-              Bi-weekly fresh fruit bunch (FFB) harvesting rounds, loose fruit collection, and digital harvester scale logger integration.
-            </p>
-            <div class="home-module-footer">
-              <span>Record Harvests</span>
-              <svg class="home-module-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-            </div>
-          </a>
-
-          <!-- Card 4: Vegetative Field Sampling -->
-          <a href="vegetative-sampling.html" class="home-module-card">
-            <div class="home-module-header">
-              <div class="home-module-icon-box">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 22px; height: 22px;"><path d="M12 22V12"/><path d="M12 12C12 7 8 4 3 4c0 5 4 8 9 8z"/><path d="M12 12c0-4 3-7 8-7 0 4-3 7-8 7z"/></svg>
-              </div>
-              <span class="home-module-tag">Module 4</span>
-            </div>
-            <h3 class="home-module-title">Vegetative Field Sampling</h3>
-            <p class="home-module-desc">
-              Frond 17 morphological sampling, petiole cross-section (P &times; D), frond dry weight (FDW), and canopy Leaf Area Index (LAI).
-            </p>
-            <div class="home-module-footer">
-              <span>View Allometrics</span>
-              <svg class="home-module-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-            </div>
-          </a>
-
-          <!-- Card 5: Annual Plot Data -->
-          <a href="annual-plot-data.html" class="home-module-card" style="border-left: 4px solid var(--brand-green); background-color: #f0fdf4;">
-            <div class="home-module-header">
-              <div class="home-module-icon-box" style="background-color: #dcfce7; color: #166534; border-color: #86efac;">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 22px; height: 22px;"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>
-              </div>
-              <span class="home-module-tag" style="background-color: #dcfce7; color: #166534; font-weight: 700;">Module 5</span>
-            </div>
-            <h3 class="home-module-title" style="color: #14532d;">Annual Plot Data</h3>
-            <p class="home-module-desc">
-              Plot-level multi-disciplinary aggregates: FFB Yield (t/ha), Leaf Nutrients, Vegetative Growth, Soil Pedology, and ASCII export for SAS.
-            </p>
-            <div class="home-module-footer" style="color: #166534;">
-              <span>Plot Summaries &amp; Exports</span>
-              <svg class="home-module-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-            </div>
-          </a>
-
-        </div>
-      </section>
-
-      <!-- ================= Research Architecture Strip ================= -->
-      <section style="background-color: #ffffff; border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 14px;">
-        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid var(--border); padding-bottom: 12px;">
-          <div>
-            <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--text);">Agronomic Research Architecture</h3>
-            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">
-              Designed according to Palm Oil Research Institute of Malaysia (PORIM / MPOB) relational database specifications.
-            </p>
-          </div>
-          <span style="font-size: 0.78rem; font-family: var(--font-mono); color: var(--brand-green); font-weight: 600;">
-            dBASE IV &middot; SQL &middot; HTML5/ES6
-          </span>
-        </div>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; font-size: 0.82rem; color: var(--text-muted);">
-          <div>
-            <strong style="color: var(--text); display: block; margin-bottom: 4px;">1. Census &amp; Layout:</strong>
-            Standardized factorial treatment blocks and individual recorded palms registered under unique plot coordinates.
-          </div>
-          <div>
-            <strong style="color: var(--text); display: block; margin-bottom: 4px;">2. Operational Rounds:</strong>
-            Bi-weekly harvesting cycles and seasonal foliar sampling logged with full digital weighing validation.
-          </div>
-          <div>
-            <strong style="color: var(--text); display: block; margin-bottom: 4px;">3. Annual Plot Aggregates:</strong>
-            Plot-by-plot synthesis combining productivity, palm vigor, foliar nutrition, and soil fertility over 12-month periods.
-          </div>
-          <div>
-            <strong style="color: var(--text); display: block; margin-bottom: 4px;">4. Biometric Exports:</strong>
-            Immediate export to fixed-width ASCII matrices (*.DAT, *.PRN) formatted for SAS, GenStat, and Minitab ANOVA models.
-          </div>
-        </div>
-      </section>
-
     </div>
 
   </main>
 
 </div>
+
+<!-- Floating Toast Notification -->
+<div class="toast-msg" id="toast" role="status" aria-live="polite">
+  <span id="toast-msg">Authenticated</span>
+</div>
+
+<script>
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    const toastMsg = document.getElementById('toast-msg');
+    if (!toast || !toastMsg) return;
+    toastMsg.textContent = msg;
+    toast.classList.add('visible');
+    setTimeout(() => toast.classList.remove('visible'), 2800);
+  }
+
+  function handleLogin() {
+    const btn = document.getElementById('btn-login-submit');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = `<svg class="spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px; animation: spin 1s linear infinite;"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle><path d="M12 2a10 10 0 0 1 10 10" stroke-linecap="round"></path></svg> <span>Authenticating Officer...</span>`;
+    }
+    localStorage.setItem('reada_logged_in', 'true');
+    showToast('Credentials verified! Entering PalmnexReaDS...');
+    setTimeout(() => {
+      window.location.href = 'list-available-data.html';
+    }, 800);
+  }
+
+  function handleGuestAccess() {
+    localStorage.setItem('reada_logged_in', 'guest');
+    showToast('Entering as Guest Researcher...');
+    setTimeout(() => {
+      window.location.href = 'list-available-data.html';
+    }, 600);
+  }
+
+  function handleForgotPassword() {
+    alert('Please contact MPOB / PORIM Agronomy & Biometrics Division Station Administrator for access key recovery.');
+  }
+</script>
+
+<style>
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+</style>
 
 </body>
 </html>
