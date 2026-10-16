@@ -17,3 +17,7 @@ __pycache__/
 .idea/
 *.swp
 *.swo
+
+# Vercel
+.vercel
+

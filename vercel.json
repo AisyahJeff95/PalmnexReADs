@@ -1,0 +1,9 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/", "destination": "/reada_latest/index.html" },
+    { "source": "/assets/(.*)", "destination": "/reada_latest/assets/$1" },
+    { "source": "/:page.html", "destination": "/reada_latest/:page.html" }
+  ]
+}
