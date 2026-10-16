@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Manual &amp; Agronomic Guidelines · PalmnexReaDS</title>
+  <meta name="description" content="PalmnexReaDS User Manual: Official MPOB / PORIM operational documentation and reference guide for oil palm agronomy research trials and relational database.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="assets/css/reada.css">
+  <style>
+    .manual-container {
+      max-width: 1040px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      padding-bottom: 40px;
+    }
+    .manual-hero {
+      background: linear-gradient(135deg, #14532d 0%, #166534 60%, #15803d 100%);
+      color: #ffffff;
+      border-radius: 14px;
+      padding: 28px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      box-shadow: 0 10px 25px -5px rgba(22, 101, 52, 0.35);
+    }
+    .manual-hero-content h2 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      margin: 0 0 8px 0;
+      color: #ffffff;
+      letter-spacing: -0.02em;
+    }
+    .manual-hero-content p {
+      margin: 0;
+      font-size: 0.88rem;
+      color: #dcfce7;
+      line-height: 1.5;
+      max-width: 650px;
+    }
+    .manual-hero-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .btn-pdf-download {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #ffffff;
+      color: #14532d;
+      font-weight: 700;
+      font-size: 0.85rem;
+      padding: 10px 18px;
+      border-radius: 8px;
+      text-decoration: none;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .btn-pdf-download:hover {
+      background: #f0fdf4;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    }
+    .manual-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+      gap: 20px;
+    }
+    .manual-card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .manual-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.08);
+      border-color: #bbf7d0;
+    }
+    .manual-card-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .manual-card-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background: #f0fdf4;
+      color: #166534;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .manual-card-icon svg {
+      width: 22px;
+      height: 22px;
+    }
+    .manual-card-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+      margin: 0;
+    }
+    .manual-card-badge {
+      font-size: 0.7rem;
+      color: #166534;
+      font-weight: 600;
+      background: #dcfce7;
+      padding: 2px 8px;
+      border-radius: 12px;
+      align-self: flex-start;
+    }
+    .manual-card-body {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.55;
+    }
+    .manual-card-body ul {
+      margin: 8px 0 0 18px;
+      padding: 0;
+    }
+    .manual-card-body li {
+      margin-bottom: 5px;
+    }
+    .manual-card-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #166534;
+      text-decoration: none;
+      margin-top: auto;
+      padding-top: 8px;
+      border-top: 1px solid #f1f5f9;
+    }
+    .manual-card-link:hover {
+      text-decoration: underline;
+    }
+    .pdf-viewer-card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .pdf-frame {
+      width: 100%;
+      height: 600px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+
+  <!-- ================= ReaDA Main Menu Sidebar ================= -->
+  <aside class="app-sidebar" aria-label="ReaDA Main Menu">
+    <div class="sidebar-header">
+      <div class="brand-icon" aria-hidden="true">
+        <img src="assets/img/palmnex-logo.png" alt="PalmnexReaDS Logo">
+      </div>
+      <div>
+        <div class="brand-title">PalmnexReaDS</div>
+        <div class="brand-subtitle">MPOB Oil Palm Agronomy Engine</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav" aria-label="Application Modules">
+      <div class="nav-section-title">Main Navigation</div>
+      <ul class="nav-menu">
+        <li>
+          <a href="index.html" class="nav-item">
+            <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <div class="nav-item-text">
+              <span>Home</span>
+              <span class="nav-item-sub">PalmnexReaDS portal</span>
+            </div>
+          </a>
+        </li>
+        <li>
+          <a href="list-available-data.html" class="nav-item">
+            <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+            <div class="nav-item-text">
+              <span>List of Available Trial Data</span>
+              <span class="nav-item-sub">Trial directory · Stations</span>
+            </div>
+          </a>
+        </li>
+        <li>
+          <a href="trial-main-info.html" class="nav-item">
+            <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h6"/></svg>
+            <div class="nav-item-text">
+              <span>Main Information</span>
+              <span class="nav-item-sub">Trial Code · Treatments · Palms</span>
+            </div>
+          </a>
+        </li>
+        <li>
+          <a href="yield-recording.html" class="nav-item">
+            <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>
+            <div class="nav-item-text">
+              <span>Yield Recording Program</span>
+              <span class="nav-item-sub">Harvest rounds &amp; FFB tonnage</span>
+            </div>
+          </a>
+        </li>
+        <li>
+          <a href="vegetative-sampling.html" class="nav-item">
+            <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V12"/><path d="M12 12C12 7 8 4 3 4c0 5 4 8 9 8z"/><path d="M12 12c0-4 3-7 8-7 0 4-3 7-8 7z"/></svg>
+            <div class="nav-item-text">
+              <span>Vegetative Field Sampling</span>
+              <span class="nav-item-sub">Morphological field measurements</span>
+            </div>
+          </a>
+        </li>
+        <li>
+          <a href="annual-plot-data.html" class="nav-item nav-item-annual">
+            <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>
+            <div class="nav-item-text">
+              <span>Annual Plot Data</span>
+              <span class="nav-item-sub">FFB · Leaf · Veg · Soil summaries</span>
+            </div>
+          </a>
+        </li>
+        <li>
+          <a href="user-manual.html" class="nav-item active" aria-current="page">
+            <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            <div class="nav-item-text">
+              <span>User Manual</span>
+              <span class="nav-item-sub">Documentation &amp; Guidelines</span>
+            </div>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="sidebar-footer">
+      <strong>Palm Oil Research Institute of Malaysia</strong>
+      PORIM · Agronomy Trial Database System
+    </div>
+  </aside>
+
+  <!-- ================= Main Content Area ================= -->
+  <main class="app-main">
+
+    <!-- Top Header -->
+    <header class="app-header">
+      <div class="header-meta">
+        <h1>User Manual &amp; Guidelines</h1>
+        <p>PORIM Relational Database for Oil Palm Agronomy Trial Data (PalmnexReaDS System Manual)</p>
+      </div>
+      <div class="header-actions">
+        <a href="index.html" class="btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Return to Home
+        </a>
+        <a href="assets/docs/PORIM-ReaDA-User-Manual.pdf" target="_blank" download="PORIM-ReaDA-User-Manual.pdf" class="btn btn-primary" style="background-color: #166534; color: #ffffff;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download PDF Manual
+        </a>
+      </div>
+    </header>
+
+    <!-- Page Body -->
+    <div class="app-body">
+      <div class="manual-container">
+
+        <!-- Hero Banner -->
+        <div class="manual-hero">
+          <div class="manual-hero-content">
+            <h2>Agronomy Research Trial Database Guide</h2>
+            <p>Welcome to the PalmnexReaDS reference manual. This documentation outlines the standards, conventions, and database procedures established by the Palm Oil Research Institute of Malaysia (PORIM) for recording and managing oil palm trial datasets.</p>
+          </div>
+          <div class="manual-hero-actions">
+            <a href="assets/docs/PORIM-ReaDA-User-Manual.pdf" target="_blank" class="btn-pdf-download">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              View Full PDF Manual
+            </a>
+          </div>
+        </div>
+
+        <!-- Section Grid -->
+        <div class="manual-grid">
+
+          <!-- Card 1 -->
+          <div class="manual-card">
+            <div class="manual-card-header">
+              <div class="manual-card-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+              </div>
+              <div>
+                <span class="manual-card-badge">Module 1</span>
+                <h3 class="manual-card-title">List of Available Trial Data</h3>
+              </div>
+            </div>
+            <div class="manual-card-body">
+              Master registry of all research stations (Kluang, Teluk Intan, Jerantut, Sabah).
+              <ul>
+                <li>Displays data availability from 1988 through 1998+.</li>
+                <li>Tracks annual indicators for Yield, Leaf, Veg, and Soil.</li>
+                <li>Filter by trial code, research station, or status.</li>
+              </ul>
+            </div>
+            <a href="list-available-data.html" class="manual-card-link">Open Trial List &rarr;</a>
+          </div>
+
+          <!-- Card 2 -->
+          <div class="manual-card">
+            <div class="manual-card-header">
+              <div class="manual-card-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h6"/></svg>
+              </div>
+              <div>
+                <span class="manual-card-badge">Module 2</span>
+                <h3 class="manual-card-title">Trial Main Information</h3>
+              </div>
+            </div>
+            <div class="manual-card-body">
+              Detailed agronomic metadata for individual field experiments.
+              <ul>
+                <li>Trial code structure (Station prefix + Trial number).</li>
+                <li>Experimental design, treatments, replicates, and plot allocations.</li>
+                <li>Palm numbering conventions and block layouts.</li>
+              </ul>
+            </div>
+            <a href="trial-main-info.html" class="manual-card-link">Open Main Info &rarr;</a>
+          </div>
+
+          <!-- Card 3 -->
+          <div class="manual-card">
+            <div class="manual-card-header">
+              <div class="manual-card-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>
+              </div>
+              <div>
+                <span class="manual-card-badge">Module 3</span>
+                <h3 class="manual-card-title">Yield Recording Program</h3>
+              </div>
+            </div>
+            <div class="manual-card-body">
+              Fresh Fruit Bunch (FFB) harvesting data collection protocols.
+              <ul>
+                <li>10-day to 14-day field harvesting rounds.</li>
+                <li>Individual palm bunch counts and bunch weight recordings.</li>
+                <li>FFB tonnage and mean bunch weight calculation engines.</li>
+              </ul>
+            </div>
+            <a href="yield-recording.html" class="manual-card-link">Open Yield Program &rarr;</a>
+          </div>
+
+          <!-- Card 4 -->
+          <div class="manual-card">
+            <div class="manual-card-header">
+              <div class="manual-card-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22V12"/><path d="M12 12C12 7 8 4 3 4c0 5 4 8 9 8z"/><path d="M12 12c0-4 3-7 8-7 0 4-3 7-8 7z"/></svg>
+              </div>
+              <div>
+                <span class="manual-card-badge">Module 4</span>
+                <h3 class="manual-card-title">Vegetative Field Sampling</h3>
+              </div>
+            </div>
+            <div class="manual-card-body">
+              Morphological vegetative growth assessment methodologies.
+              <ul>
+                <li>Frond 17 sampling protocols.</li>
+                <li>Petiole cross-section (PCS) &amp; rachis length.</li>
+                <li>Leaf Area Index (LAI) and annual height increment measurements.</li>
+              </ul>
+            </div>
+            <a href="vegetative-sampling.html" class="manual-card-link">Open Vegetative Sampling &rarr;</a>
+          </div>
+
+          <!-- Card 5 -->
+          <div class="manual-card">
+            <div class="manual-card-header">
+              <div class="manual-card-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>
+              </div>
+              <div>
+                <span class="manual-card-badge">Module 5</span>
+                <h3 class="manual-card-title">Annual Plot Data Summaries</h3>
+              </div>
+            </div>
+            <div class="manual-card-body">
+              Aggregated annual agronomic performance and nutritional analysis.
+              <ul>
+                <li>Yearly FFB totals per palm and per hectare.</li>
+                <li>Leaf tissue nutrient concentrations (N, P, K, Mg, B).</li>
+                <li>Nutrient response curves and ANOVA-ready aggregations.</li>
+              </ul>
+            </div>
+            <a href="annual-plot-data.html" class="manual-card-link">Open Annual Plot Data &rarr;</a>
+          </div>
+
+          <!-- Card 6 -->
+          <div class="manual-card">
+            <div class="manual-card-header">
+              <div class="manual-card-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              </div>
+              <div>
+                <span class="manual-card-badge">Security</span>
+                <h3 class="manual-card-title">Supabase &amp; Data Sync</h3>
+              </div>
+            </div>
+            <div class="manual-card-body">
+              Secure synchronization between offline research tablets and cloud database.
+              <ul>
+                <li>Automatic local caching for field operations with no cellular connectivity.</li>
+                <li>Bi-directional cloud synchronization when returning to station Wi-Fi.</li>
+                <li>Role-based permissions for Lead Agronomists and Field Officers.</li>
+              </ul>
+            </div>
+            <a href="index.html" class="manual-card-link">Return to Home Portal &rarr;</a>
+          </div>
+
+        </div>
+
+        <!-- PDF Viewer Section -->
+        <div class="pdf-viewer-card">
+          <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px;">
+            <div>
+              <h3 style="margin: 0 0 4px 0; font-size: 1.1rem; color: var(--text);">Original PORIM ReaDA System Manual Document</h3>
+              <p style="margin: 0; font-size: 0.8rem; color: var(--text-muted);">Palm Oil Research Institute of Malaysia — Relational Database for Agronomy Trial Data (PORIM)</p>
+            </div>
+            <a href="assets/docs/PORIM-ReaDA-User-Manual.pdf" target="_blank" class="btn btn-outline" style="font-size: 0.8rem;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;"><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+              Open in Full Window
+            </a>
+          </div>
+          <iframe class="pdf-frame" src="assets/docs/PORIM-ReaDA-User-Manual.pdf" title="PORIM ReaDA User Manual Document">
+            <p>Your browser does not support inline PDF viewing. Please <a href="assets/docs/PORIM-ReaDA-User-Manual.pdf" target="_blank">click here to download or view the PDF manual</a>.</p>
+          </iframe>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+</div>
+
+</body>
+</html>
