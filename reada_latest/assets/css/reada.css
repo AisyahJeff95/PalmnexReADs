@@ -209,37 +209,99 @@ button, input, select {
   color: #15803d;
 }
 
-/* Distinctive styling for Annual Plot Data tab on left sidebar */
+/* Distinctive styling for Annual Plot Data tab on left sidebar - subtle distinct color without looking clicked */
 .nav-item.nav-item-annual {
-  background-color: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  border-left: 4px solid var(--brand-green);
-  color: #166534;
+  background-color: #fafaf9;
+  border: 1px solid #f5f5f4;
+  color: var(--text);
 }
 
 .nav-item.nav-item-annual .nav-item-icon {
-  color: var(--brand-green);
+  color: #d97706; /* distinct warm amber icon */
 }
 
 .nav-item.nav-item-annual .nav-item-sub {
-  color: #15803d;
-  font-weight: 500;
+  color: var(--text-faint);
+  font-weight: 400;
 }
 
 .nav-item.nav-item-annual:hover {
-  background-color: #dcfce7;
-  border-color: #86efac;
-  border-left: 4px solid #15803d;
-  color: #14532d;
+  background-color: #fffbeb;
+  border-color: #fde68a;
+  color: #92400e;
+}
+
+.nav-item.nav-item-annual:hover .nav-item-icon {
+  color: #d97706;
+}
+
+.nav-item.nav-item-annual:hover .nav-item-sub {
+  color: #b45309;
 }
 
 .nav-item.nav-item-annual.active {
-  background-color: #dcfce7;
-  border-color: #86efac;
-  border-left: 4px solid #166534;
-  color: #14532d;
+  background-color: #fef3c7;
+  border-color: #fde68a;
+  border-left: 4px solid #d97706;
+  color: #92400e;
   font-weight: 700;
-  box-shadow: 0 1px 3px rgba(22, 101, 52, 0.12);
+  box-shadow: 0 1px 3px rgba(217, 119, 6, 0.12);
+}
+
+.nav-item.nav-item-annual.active .nav-item-sub {
+  color: #b45309;
+}
+
+/* Smaller, simpler secondary nav items for left panel */
+.nav-menu-secondary {
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nav-item-sm {
+  padding: 7px 10px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.nav-item-sm .nav-item-icon {
+  width: 15px;
+  height: 15px;
+  color: var(--text-faint);
+  flex-shrink: 0;
+}
+
+.nav-item-sm:hover {
+  background-color: var(--bg-subtle);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.nav-item-sm:hover .nav-item-icon {
+  color: var(--brand-green);
+}
+
+.nav-item-badge {
+  font-size: 0.66rem;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background-color: #f1f5f9;
+  color: #475569;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  margin-left: auto;
+  border: 1px solid #e2e8f0;
 }
 
 .sidebar-footer {
