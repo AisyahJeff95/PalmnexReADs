@@ -1690,8 +1690,14 @@ textarea.form-control {
   padding: 24px;
   background-image: url('../img/palmnex-hero.png');
   background-size: cover;
-  background-position: center;
+  background-position: calc(50% + 160px) center;
   background-repeat: no-repeat;
+}
+
+@media (max-width: 1024px) {
+  .app-main-login {
+    background-position: center center;
+  }
 }
 
 .login-backdrop-overlay {
