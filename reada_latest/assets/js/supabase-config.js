@@ -192,6 +192,19 @@ window.ReadaSync = {
         }
       }
 
+      // Update global in-memory state and cache immediately
+      if (window.READA_TRIALS) {
+        const existingIdx = window.READA_TRIALS.findIndex(t => t.code === trial.code);
+        if (existingIdx !== -1) {
+          window.READA_TRIALS[existingIdx] = { ...window.READA_TRIALS[existingIdx], ...trial };
+        } else {
+          window.READA_TRIALS.unshift({ ...trial });
+        }
+        try {
+          localStorage.setItem('reada_supabase_trials_cache', JSON.stringify(window.READA_TRIALS));
+        } catch (e) {}
+      }
+
       console.log(`Saved trial ${trial.code} to Supabase!`);
       return { data, error: null };
     } catch (err) {

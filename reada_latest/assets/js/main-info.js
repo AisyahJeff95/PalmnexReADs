@@ -218,7 +218,11 @@
 
       // Persist to Supabase
       if (window.ReadaSync) {
-        await window.ReadaSync.saveTrial(newTrial);
+        const res = await window.ReadaSync.saveTrial(newTrial);
+        if (res && res.error) {
+          console.error("Supabase save error:", res.error);
+          alert(`Cloud sync note: ${res.error.message || 'Unable to write to Supabase'}`);
+        }
       }
       showToast(`Created Trial ${code} (${estate})`);
     } else {
@@ -231,7 +235,11 @@
 
       // Persist to Supabase
       if (window.ReadaSync) {
-        await window.ReadaSync.saveTrial(t);
+        const res = await window.ReadaSync.saveTrial(t);
+        if (res && res.error) {
+          console.error("Supabase update error:", res.error);
+          alert(`Cloud sync note: ${res.error.message || 'Unable to update in Supabase'}`);
+        }
       }
       showToast(`Updated Main Information for ${t.code}`);
     }

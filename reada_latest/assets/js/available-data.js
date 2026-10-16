@@ -396,4 +396,7 @@
     init();
   }
 
+  // Auto-refresh when user switches back to this tab
+  window.addEventListener('focus', init);
+
 })();
