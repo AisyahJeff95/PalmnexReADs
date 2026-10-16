@@ -896,6 +896,17 @@
     const modal = document.getElementById('modal-pick-location');
     if (!modal) return;
 
+    // Reset search box state
+    const searchInput = document.getElementById('picker-search-input');
+    if (searchInput) searchInput.value = '';
+    const searchClear = document.getElementById('btn-picker-search-clear');
+    if (searchClear) searchClear.style.display = 'none';
+    const resultsContainer = document.getElementById('picker-search-results');
+    if (resultsContainer) {
+      resultsContainer.style.display = 'none';
+      resultsContainer.innerHTML = '';
+    }
+
     const latInp = document.getElementById('info-latitude');
     const lngInp = document.getElementById('info-longitude');
     let startLat = latInp && latInp.value ? parseFloat(latInp.value) : 4.0258;
@@ -960,7 +971,227 @@
     }
   }
 
+  // Preset Research Stations & Plantation Centers
+  const STATION_SEARCH_PRESETS = [
+    { title: "Teluk Intan Research Station", subtitle: "MPOB Station, Perak", lat: 4.0258, lng: 101.0189 },
+    { title: "Sg. Papan Research Station", subtitle: "Kota Tinggi, Johor", lat: 1.5167, lng: 104.1833 },
+    { title: "Bukit Paloh Research Station", subtitle: "Kluang, Johor", lat: 2.2333, lng: 103.2667 },
+    { title: "MPOB Kluang Research Station", subtitle: "Johor", lat: 2.0333, lng: 103.3167 },
+    { title: "Pamol Research Station", subtitle: "Sabah", lat: 5.9500, lng: 117.4167 },
+    { title: "Malamba Research Station", subtitle: "Sabah", lat: 5.4833, lng: 118.0667 },
+    { title: "MPOB Lahad Datu", subtitle: "Sabah", lat: 5.0200, lng: 118.3200 },
+    { title: "MPOB Tawau Research Station", subtitle: "Sabah", lat: 4.2500, lng: 117.8800 },
+    { title: "LPK Teluk Intan", subtitle: "Perak", lat: 4.0200, lng: 101.0250 },
+    { title: "Gerdong Research Station", subtitle: "RISDA, Selangor", lat: 3.4167, lng: 101.3167 },
+    { title: "MPOB Headquarters Bangi", subtitle: "Bandar Baru Bangi, Selangor", lat: 2.9800, lng: 101.7300 },
+    { title: "MPOB Keratong Research Station", subtitle: "Pahang", lat: 3.1500, lng: 102.8500 },
+    { title: "MPOB Miri Research Station", subtitle: "Sarawak", lat: 4.3800, lng: 113.9800 },
+    { title: "MPOB Kuching Research Station", subtitle: "Sarawak", lat: 1.5500, lng: 110.3500 },
+    { title: "MPOB Sandakan", subtitle: "Sabah", lat: 5.8402, lng: 118.1179 },
+    { title: "Bintulu", subtitle: "Sarawak", lat: 3.1667, lng: 113.0333 },
+    { title: "Sibu", subtitle: "Sarawak", lat: 2.2873, lng: 111.8305 },
+    { title: "Segamat", subtitle: "Johor", lat: 2.5148, lng: 102.8158 },
+    { title: "Batu Pahat", subtitle: "Johor", lat: 1.8548, lng: 102.9325 },
+    { title: "Kulai", subtitle: "Johor", lat: 1.6631, lng: 103.6033 }
+  ];
+
+  function escapeSearchText(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  async function performLocationSearch() {
+    const searchInput = document.getElementById('picker-search-input');
+    const searchBtn = document.getElementById('btn-picker-search');
+    const resultsContainer = document.getElementById('picker-search-results');
+    if (!searchInput) return;
+
+    const rawQuery = searchInput.value.trim();
+    if (!rawQuery) {
+      if (resultsContainer) resultsContainer.style.display = 'none';
+      return;
+    }
+
+    // 1. Check if user typed coordinates like "4.0258, 101.0189" or "4.0258 101.0189"
+    const coordMatch = rawQuery.match(/^([+-]?\d+(?:\.\d+)?)[,\s]+([+-]?\d+(?:\.\d+)?)$/);
+    if (coordMatch) {
+      const lat = parseFloat(coordMatch[1]);
+      const lng = parseFloat(coordMatch[2]);
+      if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+        selectSearchResult(lat, lng, `${lat.toFixed(6)}, ${lng.toFixed(6)}`);
+        showToast(`Located GPS coordinates: ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+        return;
+      }
+    }
+
+    // 2. Search local presets
+    const qLower = rawQuery.toLowerCase();
+    const localMatches = STATION_SEARCH_PRESETS.filter(p =>
+      p.title.toLowerCase().includes(qLower) || p.subtitle.toLowerCase().includes(qLower)
+    );
+
+    // Show loading state
+    if (searchBtn) {
+      searchBtn.disabled = true;
+      searchBtn.innerHTML = `<span>Searching...</span>`;
+    }
+
+    try {
+      // 3. Query ESRI World Geocoding
+      const esriUrl = `https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates?f=json&singleLine=${encodeURIComponent(rawQuery)}&maxLocations=6`;
+      const res = await fetch(esriUrl);
+      const data = await res.json();
+      const esriCandidates = (data.candidates || []).map(c => {
+        const parts = (c.address || '').split(',');
+        const mainTitle = parts[0].trim();
+        const subtitle = parts.slice(1).join(',').trim() || c.address;
+        return {
+          title: mainTitle,
+          subtitle: subtitle,
+          lat: c.location.y,
+          lng: c.location.x
+        };
+      });
+
+      // Combine local matches + ESRI candidates (avoid exact duplicates)
+      const combined = [...localMatches];
+      esriCandidates.forEach(cand => {
+        if (!combined.some(item => Math.abs(item.lat - cand.lat) < 0.001 && Math.abs(item.lng - cand.lng) < 0.001)) {
+          combined.push(cand);
+        }
+      });
+
+      if (combined.length === 1 && localMatches.length === 1) {
+        // Direct single exact match
+        selectSearchResult(combined[0].lat, combined[0].lng, combined[0].title);
+        showToast(`Located: ${combined[0].title}`);
+      } else {
+        renderSearchResults(combined);
+      }
+    } catch (err) {
+      console.warn('Geocoding query error:', err);
+      if (localMatches.length > 0) {
+        renderSearchResults(localMatches);
+      } else {
+        renderSearchResults([]);
+      }
+    } finally {
+      if (searchBtn) {
+        searchBtn.disabled = false;
+        searchBtn.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <span>Search</span>
+        `;
+      }
+    }
+  }
+
+  function renderSearchResults(items) {
+    const container = document.getElementById('picker-search-results');
+    if (!container) return;
+
+    if (!items || items.length === 0) {
+      container.innerHTML = `
+        <div style="padding: 14px 16px; font-size: 0.78rem; color: var(--text-muted); text-align: center;">
+          No matching locations found for that search.<br>
+          <span style="font-size: 0.72rem; color: var(--text-faint);">Try searching a nearby town (e.g. Teluk Intan, Kluang, Lahad Datu) or enter GPS coordinates directly.</span>
+        </div>
+      `;
+      container.style.display = 'block';
+      return;
+    }
+
+    container.innerHTML = items.slice(0, 8).map((item, idx) => `
+      <div class="picker-search-item" data-idx="${idx}" style="padding: 9px 12px; border-bottom: 1px solid #f1f5f9; cursor: pointer; display: flex; align-items: flex-start; gap: 9px; transition: background 0.15s ease;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#ffffff'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px; color: var(--brand-green); margin-top: 3px; flex-shrink: 0;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <div style="flex: 1; min-width: 0;">
+          <div style="font-size: 0.82rem; font-weight: 600; color: #0f172a; line-height: 1.3;">${escapeSearchText(item.title)}</div>
+          <div style="font-size: 0.72rem; color: #64748b; margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeSearchText(item.subtitle || '')}</div>
+        </div>
+        <div style="font-family: var(--font-mono); font-size: 0.70rem; color: var(--brand-green); font-weight: 600; white-space: nowrap; margin-top: 2px;">
+          ${item.lat.toFixed(4)}, ${item.lng.toFixed(4)}
+        </div>
+      </div>
+    `).join('');
+
+    container.style.display = 'block';
+
+    const itemEls = container.querySelectorAll('.picker-search-item');
+    itemEls.forEach(el => {
+      el.addEventListener('click', () => {
+        const idx = parseInt(el.getAttribute('data-idx'), 10);
+        const chosen = items[idx];
+        if (chosen) {
+          selectSearchResult(chosen.lat, chosen.lng, chosen.title);
+        }
+      });
+    });
+  }
+
+  function selectSearchResult(lat, lng, title) {
+    const container = document.getElementById('picker-search-results');
+    if (container) container.style.display = 'none';
+
+    const searchInput = document.getElementById('picker-search-input');
+    if (searchInput && title) searchInput.value = title;
+
+    const searchClear = document.getElementById('btn-picker-search-clear');
+    if (searchClear) searchClear.style.display = 'block';
+
+    if (pickerMap && pickerMarker) {
+      pickerMap.flyTo([lat, lng], 15, {
+        duration: 1.2,
+        easeLinearity: 0.25
+      });
+      pickerMarker.setLatLng([lat, lng]);
+    }
+    updatePickerDisplay(lat, lng);
+  }
+
+  // Picker modal and search event listeners
   document.getElementById('btn-pick-location-map')?.addEventListener('click', openLocationPicker);
+
+  const searchInputEl = document.getElementById('picker-search-input');
+  const searchBtnEl = document.getElementById('btn-picker-search');
+  const searchClearEl = document.getElementById('btn-picker-search-clear');
+
+  searchBtnEl?.addEventListener('click', performLocationSearch);
+
+  searchInputEl?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      performLocationSearch();
+    }
+  });
+
+  searchInputEl?.addEventListener('input', (e) => {
+    if (searchClearEl) {
+      searchClearEl.style.display = e.target.value.trim() ? 'block' : 'none';
+    }
+  });
+
+  searchClearEl?.addEventListener('click', () => {
+    if (searchInputEl) {
+      searchInputEl.value = '';
+      searchInputEl.focus();
+    }
+    if (searchClearEl) searchClearEl.style.display = 'none';
+    const resultsContainer = document.getElementById('picker-search-results');
+    if (resultsContainer) resultsContainer.style.display = 'none';
+  });
+
+  // Close search results dropdown on outside click
+  document.addEventListener('click', (e) => {
+    const resultsContainer = document.getElementById('picker-search-results');
+    if (!resultsContainer || resultsContainer.style.display === 'none') return;
+    if (!e.target.closest('#picker-search-results') && !e.target.closest('#picker-search-input') && !e.target.closest('#btn-picker-search')) {
+      resultsContainer.style.display = 'none';
+    }
+  });
 
   document.getElementById('btn-close-map-picker')?.addEventListener('click', () => {
     closeModal(document.getElementById('modal-pick-location'));

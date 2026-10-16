@@ -813,8 +813,36 @@
     </div>
 
     <div class="modal-body-scroll" style="padding: 14px;">
+      <!-- Location Search Box -->
+      <div style="position: relative; margin-bottom: 12px;">
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <div style="position: relative; flex: 1;">
+            <input type="text" id="picker-search-input" class="form-control" 
+                   placeholder="Search location, estate, town or GPS (e.g. Teluk Intan, Lahad Datu, 4.02, 101.03)..." 
+                   style="padding-left: 36px; padding-right: 32px; font-size: 0.82rem; height: 38px; border-radius: var(--radius-sm);"
+                   autocomplete="off">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" 
+                 style="position: absolute; left: 11px; top: 11px; width: 16px; height: 16px; color: var(--text-muted); pointer-events: none;">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <button type="button" id="btn-picker-search-clear" style="display: none; position: absolute; right: 8px; top: 9px; background: none; border: none; cursor: pointer; color: var(--text-muted); padding: 2px;" title="Clear search">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          <button type="button" class="btn btn-primary" id="btn-picker-search" style="font-size: 0.78rem; padding: 0 16px; height: 38px; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <span>Search</span>
+          </button>
+        </div>
+
+        <!-- Search Results Dropdown List -->
+        <div id="picker-search-results" style="display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #ffffff; border: 1px solid var(--border); border-radius: var(--radius-sm); box-shadow: 0 10px 25px rgba(0,0,0,0.15); z-index: 2000; max-height: 230px; overflow-y: auto;">
+        </div>
+      </div>
+
       <div style="font-size: 0.80rem; color: var(--text-muted); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-        <span>Click anywhere on the satellite imagery to position your trial research plot.</span>
+        <span>Click anywhere on the satellite imagery or drag the pin to adjust position.</span>
         <span id="picker-coord-display" style="font-family: var(--font-mono); font-weight: 600; color: var(--brand-green); font-size: 0.82rem;">Lat: 4.025800 , Lng: 101.018900</span>
       </div>
       <div id="picker-map-canvas" style="height: 380px; width: 100%; border-radius: var(--radius-sm); border: 1px solid var(--border);"></div>
