@@ -609,8 +609,73 @@
     openModal(modal);
   }
 
+  function exportYieldReportCSVDirect() {
+    const t = getCurrentTrial();
+    if (!t) return;
+
+    const roundsMap = {};
+    (t.harvestRecords || []).forEach(r => {
+      if (!roundsMap[r.round]) {
+        roundsMap[r.round] = {
+          round: r.round,
+          date: r.date,
+          count: 0,
+          nob: 0,
+          wt: 0,
+          loose: 0
+        };
+      }
+      roundsMap[r.round].count++;
+      roundsMap[r.round].nob += (r.nob || 0);
+      roundsMap[r.round].wt += (r.bunchWt || 0);
+      roundsMap[r.round].loose += (r.looseFruit || 0);
+    });
+
+    const rounds = Object.values(roundsMap).sort((a, b) => a.round - b.round);
+    const density = t.constantDensity || 160;
+    const palmsCount = (t.palms && t.palms.length > 0) ? t.palms.length : 24;
+
+    let grandNob = 0, grandWt = 0, grandLoose = 0;
+    rounds.forEach(rnd => {
+      grandNob += rnd.nob;
+      grandWt += rnd.wt;
+      grandLoose += rnd.loose;
+    });
+
+    const grandTotalFfb = grandWt + grandLoose;
+    const grandMbw = grandNob > 0 ? (grandWt / grandNob) : 0;
+    const annualYield = (grandTotalFfb * density) / (palmsCount * 1000);
+
+    const csvFileName = `YIELD_ANALYSIS_${t.code}_${activeHarvestYear}.csv`;
+
+    let csvContent = 'TRIAL_CODE,ESTATE,HARVEST_YEAR,ROUND_NO,HARVEST_DATE,PALMS_HARVESTED,TOTAL_BUNCHES_NOB,BUNCH_WT_KG,LOOSE_FRUIT_KG,MEAN_BUNCH_WT_KG,TOTAL_FFB_KG,PLANTING_DENSITY,ANNUAL_YIELD_THA\n';
+
+    rounds.forEach(rnd => {
+      const mbw = rnd.nob > 0 ? (rnd.wt / rnd.nob) : 0;
+      const rndTotalFfb = rnd.wt + rnd.loose;
+      const rndYield = (rndTotalFfb * density) / (palmsCount * 1000);
+      csvContent += `"${t.code}","${t.estate}",${activeHarvestYear},${rnd.round},"${rnd.date}",${rnd.count},${rnd.nob},${rnd.wt.toFixed(1)},${rnd.loose.toFixed(1)},${mbw.toFixed(2)},${rndTotalFfb.toFixed(1)},${density},${rndYield.toFixed(2)}\n`;
+    });
+
+    // Summary Total Row
+    csvContent += `"TOTAL_${t.code}","${t.estate}",${activeHarvestYear},"ALL_ROUNDS","March ${activeHarvestYear} — February ${activeHarvestYear + 1}",${palmsCount},${grandNob},${grandWt.toFixed(1)},${grandLoose.toFixed(1)},${grandMbw.toFixed(2)},${grandTotalFfb.toFixed(1)},${density},${annualYield.toFixed(2)}\n`;
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = csvFileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    if (modals.print) closeModal(modals.print);
+    showToast(`Downloaded ${csvFileName} to your Downloads folder`);
+  }
+
   document.getElementById('btn-trigger-print')?.addEventListener('click', () => {
-    window.print();
+    exportYieldReportCSVDirect();
   });
 
   // =========================================================================
@@ -797,7 +862,7 @@
   });
 
   document.getElementById('btn-print-yield-report')?.addEventListener('click', () => {
-    openPrintReportModal();
+    exportYieldReportCSVDirect();
   });
 
   document.getElementById('btn-save-yield-dbf')?.addEventListener('click', () => {
