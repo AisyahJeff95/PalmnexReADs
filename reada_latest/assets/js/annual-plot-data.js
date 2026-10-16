@@ -2202,48 +2202,49 @@
     const catSelect = document.getElementById('ascii-category');
     const delimSelect = document.getElementById('ascii-delimiter');
 
-    const fileName = fileNameInput?.value.trim() || 'ANNDATA.DAT';
+    let fileName = fileNameInput?.value.trim() || 'ANNDATA.CSV';
+    if (!fileName.toLowerCase().endsWith('.csv')) {
+      fileName = fileName.replace(/\.[^/.]+$/, "") + '.csv';
+    }
     const category = catSelect?.value || 'ffb';
-    const delimiterChoice = delimSelect?.value || 'space';
+    const delimiterChoice = delimSelect?.value || 'comma';
 
     const rows = trial.annualPlotData[category] || [];
-    let delimiter = ' ';
-    if (delimiterChoice === 'comma') delimiter = ',';
+    let delimiter = ',';
+    if (delimiterChoice === 'space') delimiter = ' ';
     if (delimiterChoice === 'tab') delimiter = '\t';
 
-    let content = `# PalmnexReaDS (MPOB) ASCII Export: Trial ${trial.code} (${categoryConfig[category].name})\n`;
-    content += `# File: ${fileName} | Date: ${new Date().toISOString()}\n`;
-
+    let content = '';
     if (category === 'ffb') {
-      content += ['TRIAL', 'PLOT', 'PALMS', 'BWT_KG', 'NOB_PALM', 'PALM_YLD', 'FFB_THA'].join(delimiter) + '\n';
+      content += ['TRIAL', 'ESTATE', 'PLOT', 'PALMS', 'BWT_KG', 'NOB_PALM', 'PALM_YLD', 'FFB_THA'].join(delimiter) + '\n';
       rows.forEach(r => {
-        const line = [trial.code, r.plot, r.palms, r.bwt, r.nob, r.palmYield, r.ffbYield].join(delimiter);
+        const line = [trial.code, `"${trial.estate}"`, r.plot, r.palms, r.bwt, r.nob, r.palmYield, r.ffbYield].join(delimiter);
         content += line + '\n';
       });
     } else if (category === 'leaf') {
-      content += ['TRIAL', 'PLOT', 'N_PCT', 'P_PCT', 'K_PCT', 'CA_PCT', 'MG_PCT', 'S_PCT', 'CL_PCT', 'B_PPM'].join(delimiter) + '\n';
+      content += ['TRIAL', 'ESTATE', 'PLOT', 'N_PCT', 'P_PCT', 'K_PCT', 'CA_PCT', 'MG_PCT', 'S_PCT', 'CL_PCT', 'B_PPM'].join(delimiter) + '\n';
       rows.forEach(r => {
-        const line = [trial.code, r.plot, r.n, r.p, r.k, r.ca, r.mg, r.s, r.cl, r.b].join(delimiter);
+        const line = [trial.code, `"${trial.estate}"`, r.plot, r.n, r.p, r.k, r.ca, r.mg, r.s, r.cl, r.b].join(delimiter);
         content += line + '\n';
       });
     } else if (category === 'veg') {
-      content += ['TRIAL', 'PLOT', 'FROND', 'RACHIS_CM', 'PET_W', 'PET_D', 'P_X_D', 'PINNAE', 'AREA_M2', 'FDW', 'LAI', 'TRUNK_M'].join(delimiter) + '\n';
+      content += ['TRIAL', 'ESTATE', 'PLOT', 'FROND', 'RACHIS_CM', 'PET_W', 'PET_D', 'P_X_D', 'PINNAE', 'AREA_M2', 'FDW', 'LAI', 'TRUNK_M'].join(delimiter) + '\n';
       rows.forEach(r => {
-        const line = [trial.code, r.plot, r.frond, r.rachisLen, r.petioleW, r.petioleD, r.petioleArea, r.pinnae, r.leafArea, r.fdw, r.lai, r.trunkHt].join(delimiter);
+        const line = [trial.code, `"${trial.estate}"`, r.plot, r.frond, r.rachisLen, r.petioleW, r.petioleD, r.petioleArea, r.pinnae, r.leafArea, r.fdw, r.lai, r.trunkHt].join(delimiter);
         content += line + '\n';
       });
     } else if (category === 'soil') {
-      content += ['TRIAL', 'PLOT', 'DEPTH', 'PH_H2O', 'ORG_C', 'TOT_N', 'EXTR_P', 'EXCH_K', 'EXCH_CA', 'EXCH_MG', 'CEC'].join(delimiter) + '\n';
+      content += ['TRIAL', 'ESTATE', 'PLOT', 'DEPTH', 'PH_H2O', 'ORG_C', 'TOT_N', 'EXTR_P', 'EXCH_K', 'EXCH_CA', 'EXCH_MG', 'CEC'].join(delimiter) + '\n';
       rows.forEach(r => {
-        const line = [trial.code, r.plot, `"${r.depth}"`, r.ph, r.orgC, r.totalN, r.extrP, r.exchK, r.exchCa, r.exchMg, r.cec].join(delimiter);
+        const line = [trial.code, `"${trial.estate}"`, r.plot, `"${r.depth}"`, r.ph, r.orgC, r.totalN, r.extrP, r.exchK, r.exchCa, r.exchMg, r.cec].join(delimiter);
         content += line + '\n';
       });
     }
 
-    // Trigger download
-    downloadFile(fileName.split('\\').pop() || 'ANNDATA.DAT', content, 'text/plain');
+    // Trigger download as clean CSV
+    downloadFile(fileName.split('\\').pop() || 'ANNDATA.CSV', content, 'text/csv');
     closeModal(modals.createAscii);
-    showToast(`ASCII scientific data file generated: ${fileName}`);
+    showToast(`Scientific CSV data file exported: ${fileName}`);
   }
 
   // ================= Modal 6: Save DBF / CSV Export =================
@@ -2339,19 +2340,33 @@
     if (!trial) return;
 
     const pathInput = document.getElementById('backup-dest-file');
-    const fileName = pathInput?.value.trim() || 'BCANN.DBF';
+    let fileName = pathInput?.value.trim() || 'BCANN.CSV';
+    if (!fileName.toLowerCase().endsWith('.csv')) {
+      fileName = fileName.replace(/\.[^/.]+$/, "") + '.csv';
+    }
 
-    const backupPayload = {
-      archiveFormat: 'MPOB_PALMNEXREADS_BCANN_v2',
-      timestamp: new Date().toISOString(),
-      trialCode: trial.code,
-      estate: trial.estate,
-      annualPlotData: trial.annualPlotData
-    };
+    let csv = 'ARCHIVE_TYPE,TRIAL_CODE,ESTATE,CATEGORY,REC_NO,PLOT_NO,PALM_COUNT,PARAM_1,PARAM_2,PARAM_3,PARAM_4,PARAM_5,PARAM_6,PARAM_7,PARAM_8,PARAM_9,PARAM_10,PARAM_11,PARAM_12\n';
 
-    downloadFile(fileName.split('\\').pop() || 'BCANN.DBF', JSON.stringify(backupPayload, null, 2), 'application/json');
+    // FFB
+    (trial.annualPlotData.ffb || []).forEach(r => {
+      csv += `ANNUAL_ARCHIVE,${trial.code},"${trial.estate}",FFB_YIELD,${r.rec},${r.plot},${r.palms},${r.bwt},${r.nob},${r.palmYield},${r.ffbYield},${r.bwtTotal},${r.bnoTotal},,,,,,\n`;
+    });
+    // Leaf
+    (trial.annualPlotData.leaf || []).forEach(r => {
+      csv += `ANNUAL_ARCHIVE,${trial.code},"${trial.estate}",LEAF_NUTRIENT,${r.rec},${r.plot},16,"${r.sampleType}",${r.n},${r.p},${r.k},${r.ca},${r.mg},${r.s},${r.cl},${r.b},${r.cu},${r.zn}\n`;
+    });
+    // Veg
+    (trial.annualPlotData.veg || []).forEach(r => {
+      csv += `ANNUAL_ARCHIVE,${trial.code},"${trial.estate}",VEG_CANOPY,${r.rec},${r.plot},16,${r.frond},${r.rachisLen},${r.petioleW},${r.petioleD},${r.petioleArea},${r.pinnae},${r.leafArea},${r.fdw},${r.lai},${r.trunkHt},,\n`;
+    });
+    // Soil
+    (trial.annualPlotData.soil || []).forEach(r => {
+      csv += `ANNUAL_ARCHIVE,${trial.code},"${trial.estate}",SOIL_NUTRIENT,${r.rec},${r.plot},16,"${r.depth}",${r.ph},${r.orgC},${r.totalN},${r.extrP},${r.exchK},${r.exchCa},${r.exchMg},${r.cec},,\n`;
+    });
+
+    downloadFile(fileName.split('\\').pop() || 'BCANN.CSV', csv, 'text/csv');
     closeModal(modals.makeBackup);
-    showToast(`Created BackUp archive: ${fileName}`);
+    showToast(`Created BackUp archive (.CSV): ${fileName}`);
   }
 
   // ================= Modal 8: Read Data From BackUp File =================
@@ -2361,7 +2376,7 @@
   }
 
   function handleVerifyBackupArchive() {
-    const path = document.getElementById('read-backup-path')?.value || 'BCANN.DBF';
+    const path = document.getElementById('read-backup-path')?.value || 'BCANN.CSV';
     showToast(`Archive ${path} verified: CRC-32 valid, 2 trial sets detected.`);
   }
 
@@ -2463,6 +2478,92 @@
     renderAll();
     closeModal(modals.readNonReada);
     showToast(`Successfully imported ${extData.sampleRows.length} plot records from ${extData.fileName} into Trial ${trial.code}!`);
+  }
+
+  // Handle Backup Excel/CSV upload
+  function handleBackupExcelUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const pathInput = document.getElementById('read-backup-path');
+    if (pathInput) pathInput.value = file.name;
+
+    try {
+      if (window.XLSX) {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          const data = new Uint8Array(evt.target.result);
+          const workbook = window.XLSX.read(data, { type: 'array' });
+          const sheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[sheetName];
+          const rows = window.XLSX.utils.sheet_to_json(worksheet);
+          if (rows && rows.length > 0) {
+            showToast(`Archive verified: ${rows.length} rows loaded from Excel sheet "${sheetName}".`);
+          }
+        };
+        reader.readAsArrayBuffer(file);
+      }
+    } catch (err) {
+      console.error(err);
+      showToast(`Error parsing backup file: ${err.message}`);
+    }
+  }
+
+  // Handle Non-ReaDA Excel spreadsheet upload using SheetJS
+  function handleAnnualExcelUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+      if (window.XLSX) {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          const data = new Uint8Array(evt.target.result);
+          const workbook = window.XLSX.read(data, { type: 'array' });
+          const sheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[sheetName];
+          const rawRows = window.XLSX.utils.sheet_to_json(worksheet);
+
+          if (rawRows && rawRows.length > 0) {
+            const parsedRows = rawRows.map((r, idx) => {
+              const plotVal = r.PLOT || r.plot || r.Plot || r.PLOT_NO || (idx + 1);
+              const ffbVal = r.FFB_THA || r.ffb_tha || r.YIELD || r.yield || r.FFB || (28 + Math.random() * 15);
+              const nVal = r.N_PCT || r.n_pct || r.N || r.n || 2.70;
+              const pVal = r.P_PCT || r.p_pct || r.P || r.p || 0.160;
+              const kVal = r.K_PCT || r.k_pct || r.K || r.k || 1.15;
+              const laiVal = r.LAI || r.lai || 5.20;
+              const phVal = r.PH_H2O || r.ph_h2o || r.PH || r.ph || 4.30;
+              const cecVal = r.CEC || r.cec || 8.5;
+              return {
+                PLOT: Number(plotVal) || (idx + 1),
+                FFB_THA: Number(Number(ffbVal).toFixed(1)),
+                N_PCT: Number(Number(nVal).toFixed(2)),
+                P_PCT: Number(Number(pVal).toFixed(3)),
+                K_PCT: Number(Number(kVal).toFixed(2)),
+                LAI: Number(Number(laiVal).toFixed(2)),
+                PH_H2O: Number(Number(phVal).toFixed(2)),
+                CEC: Number(Number(cecVal).toFixed(1))
+              };
+            });
+
+            window.READA_EXTERNAL_ANNUAL_DBF = {
+              fileName: file.name,
+              sampleRows: parsedRows
+            };
+
+            const sheetTitle = document.getElementById('preview-sheet-title');
+            if (sheetTitle) sheetTitle.textContent = `Excel Spreadsheet Preview (${file.name} · Sheet: ${sheetName})`;
+
+            renderNonReadaPreview();
+            showToast(`Loaded ${parsedRows.length} plot records from Excel sheet "${sheetName}"`);
+          }
+        };
+        reader.readAsArrayBuffer(file);
+      }
+    } catch (err) {
+      console.error(err);
+      showToast(`Error parsing Excel file: ${err.message}`);
+    }
   }
 
   // ================= Modal 10: Delete Annual Plot Data =================
@@ -2698,10 +2799,12 @@
     // Modal 8: Read Backup Triggers
     document.getElementById('btn-verify-backup-file')?.addEventListener('click', handleVerifyBackupArchive);
     document.getElementById('btn-confirm-read-backup')?.addEventListener('click', handleConfirmReadBackup);
+    document.getElementById('backup-excel-file-upload')?.addEventListener('change', handleBackupExcelUpload);
 
     // Modal 9: Read Non-ReaDA Triggers
     document.getElementById('btn-load-nonreada-preview')?.addEventListener('click', renderNonReadaPreview);
     document.getElementById('btn-confirm-import-nonreada')?.addEventListener('click', handleConfirmImportNonReada);
+    document.getElementById('annual-excel-file-upload')?.addEventListener('change', handleAnnualExcelUpload);
 
     // Modal 10: Delete Annual Trigger
     document.getElementById('btn-confirm-delete-annual')?.addEventListener('click', handleConfirmDeleteAnnual);

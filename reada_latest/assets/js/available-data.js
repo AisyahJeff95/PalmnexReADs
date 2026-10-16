@@ -153,9 +153,9 @@
         </div>
         <div style="display: flex; align-items: center; gap: 8px;">
           <span class="badge-tag">${totalRecs} Total Annual Records</span>
-          <button type="button" class="btn" id="btn-export-trial" title="Export this trial dataset">
+          <button type="button" class="btn" id="btn-export-trial" title="Export this trial dataset (.CSV)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-            Export JSON
+            Export CSV
           </button>
         </div>
       </div>
@@ -309,35 +309,41 @@
     `;
   }
 
-  // Export Selected Trial Data to JSON
+  // Export Selected Trial Data to CSV ONLY
   function exportTrialData(trial) {
-    const exportObj = {
-      system: 'PalmnexReaDS — Palmnex Research and Database System',
-      institution: 'Malaysian Palm Oil Board (MPOB)',
-      trialCode: trial.code,
-      estate: trial.estate,
-      plantingYear: trial.plantingYear,
-      exportedAt: new Date().toISOString(),
-      datasets: {
-        recordingYield: trial.recordingYield || [],
-        ffbYield: trial.ffbYield || [],
-        leafNutrients: trial.leafNutrients || [],
-        vegetativeMeasurement: trial.vegetativeMeasurement || [],
-        soilNutrients: trial.soilNutrients || []
-      }
-    };
+    let csv = 'TRIAL_CODE,ESTATE,PLANTING_YEAR,DATA_SERIES,PERIOD_OR_PARAM,FROM_OR_VALUE,TO_OR_REMARKS\n';
 
-    const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: 'application/json' });
+    (trial.recordingYield || []).forEach(r => {
+      csv += `"${trial.code}","${trial.estate}",${trial.plantingYear || ''},"Yield Recording","Period","${r.from?.mn}/${r.from?.yr}","${r.to?.mn}/${r.to?.yr}"\n`;
+    });
+
+    (trial.ffbYield || []).forEach(r => {
+      csv += `"${trial.code}","${trial.estate}",${trial.plantingYear || ''},"Annual FFB Yield","Period","${r.from?.mn}/${r.from?.yr}","${r.to?.mn}/${r.to?.yr}"\n`;
+    });
+
+    (trial.leafNutrients || []).forEach(r => {
+      csv += `"${trial.code}","${trial.estate}",${trial.plantingYear || ''},"Leaf Nutrients","Sampling Date","${r.dy}/${r.mn}/${r.yr}","Frond 17"\n`;
+    });
+
+    (trial.vegetativeMeasurement || []).forEach(r => {
+      csv += `"${trial.code}","${trial.estate}",${trial.plantingYear || ''},"Vegetative Sampling","Measurement Date","${r.dy}/${r.mn}/${r.yr}","Morphometrics"\n`;
+    });
+
+    (trial.soilNutrients || []).forEach(r => {
+      csv += `"${trial.code}","${trial.estate}",${trial.plantingYear || ''},"Soil Nutrients","Analysis Date","${r.dy}/${r.mn}/${r.yr}","Chemical Profile"\n`;
+    });
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `READA_${trial.code}_ANNUAL_DATA.json`;
+    a.download = `READA_${trial.code}_ANNUAL_DATA.csv`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 
-    showToast(`Exported ${trial.code} trial annual data to JSON`);
+    showToast(`Exported ${trial.code} trial annual data to CSV`);
   }
 
   // Search input handler

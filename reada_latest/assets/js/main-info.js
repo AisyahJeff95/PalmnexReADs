@@ -519,72 +519,63 @@
     document.getElementById('save-dbf-estate').textContent = t.estate;
 
     if (type === 'info') {
-      title.textContent = 'Save Trial Main Information As *.dbf File';
-      filenameInp.value = `C:\\READA\\INFO${t.code}.DBF`;
+      title.textContent = 'Save Trial Main Information As *.csv File';
+      filenameInp.value = `C:\\READA\\INFO${t.code}.CSV`;
       summary.textContent = `Includes Trial Code (${t.code}), Location (${t.estate}), Year (${t.plantingYear}), and ${t.factors.length} Treatment Factors.`;
     } else if (type === 'treatment') {
-      title.textContent = 'Save Plot Treatment Data As *.dbf File';
-      filenameInp.value = `C:\\READA\\TREAT.DBF`;
+      title.textContent = 'Save Plot Treatment Data As *.csv File';
+      filenameInp.value = `C:\\READA\\TREAT.CSV`;
       summary.textContent = `Includes ${t.plotTreatments.length} plot records with factorial levels and planting density.`;
     } else {
-      title.textContent = 'Save Palm Number Data As *.dbf File';
-      filenameInp.value = `C:\\READA\\PALM.DBF`;
+      title.textContent = 'Save Palm Number Data As *.csv File';
+      filenameInp.value = `C:\\READA\\PALM.CSV`;
       summary.textContent = `Includes ${t.palms.length} registered palm numbers with progeny genetics.`;
     }
 
     openModal(modal);
   }
 
-  // Confirm Save / Download file
+  // Confirm Save / Export as CSV ONLY (No JSON / No DBF)
   document.getElementById('btn-confirm-save-dbf')?.addEventListener('click', () => {
     const t = getCurrentTrial();
     const filename = document.getElementById('save-dbf-filename').value.trim();
-    const baseName = filename.split('\\').pop() || 'EXPORT.DBF';
+    const baseName = filename.split('\\').pop() || 'EXPORT.CSV';
+    const csvFileName = baseName.replace(/\.(dbf|json)$/i, '') + (baseName.toLowerCase().endsWith('.csv') ? '' : '.csv');
 
-    let payload = {};
+    let csvContent = '';
     if (currentSaveType === 'info') {
-      payload = {
-        databaseFile: 'DATAINFO.DBF',
-        trialCode: t.code,
-        estate: t.estate,
-        plantingYear: t.plantingYear,
-        factors: t.factors,
-        factorInfo: t.factorInfo
-      };
+      csvContent = 'TRIAL_CODE,ESTATE,PLANTING_YEAR,FACTORS_COUNT,DENSITY_TYPE,CONSTANT_DENSITY,FACTOR_DEFINITIONS\n';
+      const factorDef = (t.factorInfo || '').replace(/"/g, '""').replace(/\n/g, '; ');
+      csvContent += `"${t.code}","${t.estate}",${t.plantingYear || ''},${(t.factors || []).length},"${t.densityType || ''}",${t.constantDensity || ''},"${factorDef}"\n`;
     } else if (currentSaveType === 'treatment') {
-      payload = {
-        databaseFile: 'TREAT.DBF',
-        trialCode: t.code,
-        estate: t.estate,
-        densityType: t.densityType,
-        constantDensity: t.constantDensity,
-        treatments: t.plotTreatments
-      };
+      csvContent = 'REC_NO,PLOT_NO,SUB_PLOT,FACTOR1,FACTOR2,FACTOR3,FACTOR4,FACTOR5,FACTOR6,DENSITY\n';
+      (t.plotTreatments || []).forEach(tr => {
+        const lvls = tr.levels || [];
+        csvContent += `${tr.rec},${tr.plot},"${tr.subPlot || ''}",${lvls[0] ?? ''},${lvls[1] ?? ''},${lvls[2] ?? ''},${lvls[3] ?? ''},${lvls[4] ?? ''},${lvls[5] ?? ''},${tr.density || ''}\n`;
+      });
     } else {
-      payload = {
-        databaseFile: 'PALM.DBF',
-        trialCode: t.code,
-        estate: t.estate,
-        palms: t.palms
-      };
+      csvContent = 'REC_NO,PLOT_NO,SUB_PLOT,PALM_NO,PROGENY,STATUS\n';
+      (t.palms || []).forEach(p => {
+        csvContent += `${p.rec},${p.plot},"${p.subPlot || ''}","${p.palmNo || ''}","${(p.progeny || '').replace(/"/g, '""')}","${p.status || ''}"\n`;
+      });
     }
 
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = baseName.replace(/\.dbf$/i, '.json');
+    a.download = csvFileName;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 
-    showToast(`Exported ${baseName} (${payload.databaseFile})`);
+    showToast(`Exported ${csvFileName}`);
     closeModal(modals.saveDbf);
   });
 
   // =========================================================================
-  // FIGURES 6, 9, 13 (2.5, 2.8, 2.13): Read Backup File Pop-ups
+  // FIGURES 6, 9, 13: Read Backup / Excel File Pop-ups
   // =========================================================================
   function openBackupModal(type) {
     currentBackupType = type;
@@ -597,14 +588,14 @@
     previewBox.style.display = 'none';
 
     if (type === 'info') {
-      title.textContent = 'Read Trial Main Information From Backup File';
-      fileInp.value = 'C:\\READA\\BCINFO.DBF';
+      title.textContent = 'Read Trial Main Information From Backup / Excel File';
+      fileInp.value = 'C:\\READA\\BCINFO.CSV';
     } else if (type === 'treatment') {
-      title.textContent = 'Read Plot Treatment Data From Backup File';
-      fileInp.value = 'C:\\READA\\BCTREAT.DBF';
+      title.textContent = 'Read Plot Treatment Data From Backup / Excel File';
+      fileInp.value = 'C:\\READA\\BCTREAT.CSV';
     } else {
-      title.textContent = 'Read Palm Numbering From Backup File';
-      fileInp.value = 'C:\\READA\\BCPALM.DBF';
+      title.textContent = 'Read Palm Numbering From Backup / Excel File';
+      fileInp.value = 'C:\\READA\\BCPALM.CSV';
     }
 
     openModal(modal);
@@ -632,8 +623,19 @@
   });
 
   // =========================================================================
-  // FIGURES 10 & 14 (2.9 & 2.14): External 'Non-ReaDA' DBase File Pop-ups
+  // FIGURES 10 & 14: Read From Excel File (*.xlsx / *.xls / *.csv)
   // =========================================================================
+  function renderNonReadaPreview(ext) {
+    const thead = document.getElementById('non-reada-table-head');
+    const tbody = document.getElementById('non-reada-table-body');
+    if (thead && tbody && ext && ext.fields) {
+      thead.innerHTML = `<tr>${ext.fields.map(f => `<th>${f}</th>`).join('')}</tr>`;
+      tbody.innerHTML = (ext.sampleRows || []).slice(0, 50).map(r => `
+        <tr>${ext.fields.map(f => `<td style="font-family: var(--font-mono); font-size: 0.76rem;">${r[f] ?? ''}</td>`).join('')}</tr>
+      `).join('');
+    }
+  }
+
   function openNonReadaModal(type) {
     const modal = modals.nonReada;
     const t = getCurrentTrial();
@@ -644,38 +646,68 @@
     document.getElementById('non-reada-estate').textContent = t.estate;
 
     if (type === 'treatment') {
-      title.textContent = "Import Trial Plot Treatment from External DBase File";
-      fileInp.value = 'B:\\DTPL1195.DBF';
+      title.textContent = "Import Trial Plot Treatment from Excel Spreadsheet";
+      fileInp.value = 'B:\\DTPL1195.XLSX';
     } else {
-      title.textContent = "Import Palm Numbering from External DBase File";
-      fileInp.value = 'B:\\DTPY97.DBF';
+      title.textContent = "Import Palm Numbering from Excel Spreadsheet";
+      fileInp.value = 'B:\\DTPY97.XLSX';
     }
 
     const ext = window.READA_EXTERNAL_DBF || { fields: [], sampleRows: [] };
-    const thead = document.getElementById('non-reada-table-head');
-    const tbody = document.getElementById('non-reada-table-body');
-
-    if (thead && tbody) {
-      thead.innerHTML = `<tr>${ext.fields.map(f => `<th>${f}</th>`).join('')}</tr>`;
-      tbody.innerHTML = ext.sampleRows.map(r => `
-        <tr>${ext.fields.map(f => `<td style="font-family: var(--font-mono); font-size: 0.76rem;">${r[f] ?? ''}</td>`).join('')}</tr>
-      `).join('');
-    }
-
+    renderNonReadaPreview(ext);
     openModal(modal);
   }
+
+  // Handle Excel File Upload Input using SheetJS
+  document.getElementById('non-reada-file-upload')?.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const nameInp = document.getElementById('non-reada-filename');
+    if (nameInp) nameInp.value = file.name;
+
+    try {
+      if (window.XLSX) {
+        const buffer = await file.arrayBuffer();
+        const workbook = window.XLSX.read(buffer, { type: 'array' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const rows = window.XLSX.utils.sheet_to_json(worksheet);
+
+        if (rows && rows.length > 0) {
+          const fields = Object.keys(rows[0]);
+          window.READA_EXTERNAL_DBF = {
+            fileName: file.name,
+            fields: fields,
+            sampleRows: rows
+          };
+          renderNonReadaPreview(window.READA_EXTERNAL_DBF);
+          showToast(`Read ${rows.length} rows from Excel sheet "${sheetName}"`);
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      showToast(`Error parsing Excel file: ${err.message}`);
+    }
+  });
 
   // Start Reading File & Map
   document.getElementById('btn-start-reading-file')?.addEventListener('click', () => {
     const t = getCurrentTrial();
     const ext = window.READA_EXTERNAL_DBF;
-    if (ext && ext.sampleRows) {
+    if (ext && ext.sampleRows && ext.sampleRows.length > 0) {
       t.plotTreatments = ext.sampleRows.map((r, i) => ({
         rec: i + 1,
-        plot: r.PLOT_ID,
-        subPlot: r.BLOCK || '',
-        levels: [r.REP_CODE, r.DENS_LVL, r.N_LVL, r.P_LVL, r.K_LVL, r.L_LVL],
-        density: r.SPACING || 160
+        plot: r.PLOT || r.PLOT_ID || r.PLOT_NO || (i + 1),
+        subPlot: r.SUBPLOT || r.BLOCK || r.SUB_PLOT || '',
+        levels: [
+          r.REP || r.REP_CODE || r.FACTOR1 || 1,
+          r.D || r.DENS_LVL || r.FACTOR2 || 1,
+          r.N || r.N_LVL || r.FACTOR3 || 0,
+          r.P || r.P_LVL || r.FACTOR4 || 0,
+          r.K || r.K_LVL || r.FACTOR5 || 0,
+          r.L || r.L_LVL || r.FACTOR6 || 0
+        ],
+        density: r.DENSITY || r.SPACING || 148
       }));
       showToast(`Mapped ${ext.sampleRows.length} external records into ${t.code}`);
     }

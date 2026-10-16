@@ -629,36 +629,34 @@
     openModal(modal);
   }
 
+  // Confirm Save / Export as CSV ONLY (No JSON / No DBF)
   document.getElementById('btn-confirm-save-yield')?.addEventListener('click', () => {
     const t = getCurrentTrial();
     const filename = document.getElementById('save-yield-filename').value.trim();
-    const baseName = filename.split('\\').pop() || 'YIELD_EXPORT.DBF';
+    const baseName = filename.split('\\').pop() || `DATARYLD_${t.code}.csv`;
+    const csvFileName = baseName.replace(/\.(dbf|json)$/i, '') + (baseName.toLowerCase().endsWith('.csv') ? '' : '.csv');
 
-    const payload = {
-      databaseFile: 'DATARYLD.DBF',
-      trialCode: t.code,
-      estate: t.estate,
-      harvestYear: activeHarvestYear,
-      harvestRecords: t.harvestRecords,
-      missingPalms: t.missingPalms
-    };
+    let csvContent = 'TRIAL_CODE,ESTATE,REC_NO,PLOT_NO,SUB_PLOT,PALM_NO,ROUND_NO,HARVEST_DATE,NO_BUNCH,BUNCH_WT_KG,LOOSE_FRUIT_KG,HARVESTER_ID,REMARKS\n';
+    (t.harvestRecords || []).forEach(r => {
+      csvContent += `"${t.code}","${t.estate}",${r.rec},${r.plot},"${r.subPlot || ''}","${r.palmNo || ''}",${r.round || 1},"${r.date || ''}",${r.nob || 0},${r.bunchWt || 0},${r.looseFruit || 0},"${r.harvesterId || ''}","${(r.remarks || '').replace(/"/g, '""')}"\n`;
+    });
 
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = baseName.replace(/\.dbf$/i, '.json');
+    a.download = csvFileName;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 
-    showToast(`Exported ${baseName} (${payload.databaseFile})`);
+    showToast(`Exported ${csvFileName}`);
     closeModal(modals.saveDbf);
   });
 
   // =========================================================================
-  // 7. READ BACKUP (READ_BACKUP)
+  // 7. READ BACKUP / EXCEL (READ_BACKUP)
   // =========================================================================
   function openBackupModal() {
     const modal = modals.backup;
@@ -674,7 +672,7 @@
     txt.innerHTML = `
       <strong>Backup File Verified:</strong> ${document.getElementById('yield-backup-filename').value}<br>
       Found archived harvesting records matching Trial Code: <strong>${t.code} (${t.estate})</strong>.<br>
-      Ready to restore harvesting rounds into DATARYLD.DBF.
+      Ready to restore harvesting rounds.
     `;
   });
 
@@ -686,8 +684,19 @@
   });
 
   // =========================================================================
-  // 8. IMPORT EXTERNAL NON-READA FILE (RDB_YIELD_DATA)
+  // 8. READ FROM EXCEL SPREADSHEET (*.xlsx / *.xls / *.csv)
   // =========================================================================
+  function renderYieldPreview(ext) {
+    const thead = document.getElementById('yield-nonreada-head');
+    const tbody = document.getElementById('yield-nonreada-body');
+    if (thead && tbody && ext && ext.fields) {
+      thead.innerHTML = `<tr>${ext.fields.map(f => `<th>${f}</th>`).join('')}</tr>`;
+      tbody.innerHTML = (ext.sampleRows || []).slice(0, 50).map(r => `
+        <tr>${ext.fields.map(f => `<td style="font-family: var(--font-mono); font-size: 0.76rem;">${r[f] ?? ''}</td>`).join('')}</tr>
+      `).join('');
+    }
+  }
+
   function openNonReadaModal() {
     const t = getCurrentTrial();
     const modal = modals.nonReada;
@@ -696,39 +705,62 @@
     document.getElementById('yield-nonreada-estate').textContent = t.estate;
 
     const ext = window.READA_EXTERNAL_YIELD_CSV || { fields: [], sampleRows: [] };
-    const thead = document.getElementById('yield-nonreada-head');
-    const tbody = document.getElementById('yield-nonreada-body');
-
-    if (thead && tbody) {
-      thead.innerHTML = `<tr>${ext.fields.map(f => `<th>${f}</th>`).join('')}</tr>`;
-      tbody.innerHTML = ext.sampleRows.map(r => `
-        <tr>${ext.fields.map(f => `<td style="font-family: var(--font-mono); font-size: 0.76rem;">${r[f] ?? ''}</td>`).join('')}</tr>
-      `).join('');
-    }
-
+    renderYieldPreview(ext);
     openModal(modal);
   }
+
+  // Handle Excel file upload using SheetJS
+  document.getElementById('yield-excel-file-upload')?.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const nameInp = document.getElementById('yield-nonreada-filename');
+    if (nameInp) nameInp.value = file.name;
+
+    try {
+      if (window.XLSX) {
+        const buffer = await file.arrayBuffer();
+        const workbook = window.XLSX.read(buffer, { type: 'array' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const rows = window.XLSX.utils.sheet_to_json(worksheet);
+
+        if (rows && rows.length > 0) {
+          const fields = Object.keys(rows[0]);
+          window.READA_EXTERNAL_YIELD_CSV = {
+            fileName: file.name,
+            fields: fields,
+            sampleRows: rows
+          };
+          renderYieldPreview(window.READA_EXTERNAL_YIELD_CSV);
+          showToast(`Read ${rows.length} harvesting records from Excel sheet "${sheetName}"`);
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      showToast(`Error parsing Excel file: ${err.message}`);
+    }
+  });
 
   document.getElementById('btn-start-import-yield-file')?.addEventListener('click', () => {
     const t = getCurrentTrial();
     const ext = window.READA_EXTERNAL_YIELD_CSV;
-    if (ext && ext.sampleRows) {
+    if (ext && ext.sampleRows && ext.sampleRows.length > 0) {
       ext.sampleRows.forEach((r, i) => {
         t.harvestRecords.push({
           rec: t.harvestRecords.length + 1,
-          plot: r.PLOT || 1,
-          subPlot: '',
-          palmNo: r.PALM || '18',
-          round: r.RND || 3,
-          date: r.HARV_DATE || '14/04/1997',
-          nob: r.NO_BUNCH || 2,
-          bunchWt: r.BWT_KG || 35.0,
-          looseFruit: r.LOOSE_KG || 2.0,
-          harvesterId: r.HARV_CODE || 'H01',
-          remarks: r.REMARK || 'Imported'
+          plot: r.PLOT || r.PLOT_NO || 1,
+          subPlot: r.SUBPLOT || r.SUB_PLOT || '',
+          palmNo: String(r.PALM || r.PALM_NO || '18'),
+          round: r.RND || r.ROUND_NO || 3,
+          date: r.HARV_DATE || r.HARVEST_DATE || '14/04/1997',
+          nob: Number(r.NO_BUNCH || r.BUNCH_NO || 2),
+          bunchWt: Number(r.BWT_KG || r.BUNCH_WT || 35.0),
+          looseFruit: Number(r.LOOSE_KG || r.LOOSE_FRUIT || 2.0),
+          harvesterId: r.HARV_CODE || r.HARVESTER_ID || 'H01',
+          remarks: r.REMARK || r.REMARKS || 'Imported from Excel'
         });
       });
-      showToast(`Mapped ${ext.sampleRows.length} external scale records into ${t.code}`);
+      showToast(`Mapped ${ext.sampleRows.length} external records into ${t.code}`);
     }
     refreshHeader();
     closeModal(modals.nonReada);

@@ -885,16 +885,17 @@
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.setAttribute('download', filename.endsWith('.csv') || filename.endsWith('.dbf') ? filename : `${filename}.csv`);
+    const csvFileName = filename.replace(/\.(dbf|json)$/i, '') + (filename.toLowerCase().endsWith('.csv') ? '' : '.csv');
+    link.setAttribute('download', csvFileName);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 
     closeModal(modals.saveDbf);
-    showToast(`Exported ${scope === 'annual' ? 'DATAVM' : 'ACFSDATA'} records to ${filename}`);
+    showToast(`Exported ${scope === 'annual' ? 'DATAVM' : 'ACFSDATA'} records to ${csvFileName}`);
   }
 
-  // ================= Modal 7: Read Backup (BCVM.DBF) =================
+  // ================= Modal 7: Read Backup / Excel =================
 
   function openBackupModal() {
     const tbody = document.getElementById('tbody-backup-trials');
@@ -920,39 +921,69 @@
 
     closeModal(modals.backup);
     refreshDashboard();
-    showToast(`Restored backup vegetative data for ${trial.code} from BCVM.DBF`);
+    showToast(`Restored backup vegetative data for ${trial.code} from CSV / Excel`);
   }
 
-  // ================= Modal 8: Read External Non-ReaDA Data =================
+  // ================= Modal 8: Read External Excel Data (*.xlsx / *.xls / *.csv) =================
 
-  function openExternalModal() {
+  function renderVegPreview(sampleRows) {
     const previewTbody = document.getElementById('tbody-external-veg-preview');
     if (!previewTbody) return;
 
-    const external = window.READA_EXTERNAL_VEG_CSV;
-    if (!external || !external.sampleRows) {
-      previewTbody.innerHTML = `<tr><td colspan="10" style="text-align: center; padding: 20px;">No external file found.</td></tr>`;
-      openModal(modals.external);
-      return;
-    }
-
-    previewTbody.innerHTML = external.sampleRows.map(row => `
+    previewTbody.innerHTML = (sampleRows || []).slice(0, 50).map(row => `
       <tr>
-        <td><strong>${row.PLOT}</strong></td>
-        <td><strong style="color: var(--brand-green);">${row.PALM}</strong></td>
-        <td>F${row.FROND}</td>
-        <td style="text-align: right; font-family: var(--font-mono);">${parseFloat(row.RACHIS_CM).toFixed(1)}</td>
-        <td style="text-align: right; font-family: var(--font-mono);">${parseFloat(row.PET_W_CM).toFixed(1)}</td>
-        <td style="text-align: right; font-family: var(--font-mono);">${parseFloat(row.PET_D_CM).toFixed(1)}</td>
-        <td style="text-align: right; font-family: var(--font-mono);">${row.PINNAE}</td>
-        <td style="text-align: right; font-family: var(--font-mono);">${parseFloat(row.LLEN_CM).toFixed(1)}</td>
-        <td style="text-align: right; font-family: var(--font-mono);">${parseFloat(row.LWID_CM).toFixed(1)}</td>
-        <td style="text-align: right; font-family: var(--font-mono);">${parseFloat(row.TRUNK_M).toFixed(2)}</td>
+        <td><strong>${row.PLOT || row.PLOT_NO || 1}</strong></td>
+        <td><strong style="color: var(--brand-green);">${row.PALM || row.PALM_NO || '18'}</strong></td>
+        <td>F${row.FROND || 17}</td>
+        <td style="text-align: right; font-family: var(--font-mono);">${parseFloat(row.RACHIS_CM || row.RACHIS_LEN_CM || 540).toFixed(1)}</td>
+        <td style="text-align: right; font-family: var(--font-mono);">${parseFloat(row.PET_W_CM || row.PETIOLE_W_CM || 5.2).toFixed(1)}</td>
+        <td style="text-align: right; font-family: var(--font-mono);">${parseFloat(row.PET_D_CM || row.PETIOLE_D_CM || 3.8).toFixed(1)}</td>
+        <td style="text-align: right; font-family: var(--font-mono);">${row.PINNAE || row.PINNAE_COUNT || 310}</td>
+        <td style="text-align: right; font-family: var(--font-mono);">${parseFloat(row.LLEN_CM || row.LEAFLET_LEN_CM || 85).toFixed(1)}</td>
+        <td style="text-align: right; font-family: var(--font-mono);">${parseFloat(row.LWID_CM || row.LEAFLET_W_CM || 4.8).toFixed(1)}</td>
+        <td style="text-align: right; font-family: var(--font-mono);">${parseFloat(row.TRUNK_M || row.TRUNK_HT_M || 3.4).toFixed(2)}</td>
       </tr>
     `).join('');
+  }
 
+  function openExternalModal() {
+    const external = window.READA_EXTERNAL_VEG_CSV;
+    if (external && external.sampleRows) {
+      renderVegPreview(external.sampleRows);
+    }
     openModal(modals.external);
   }
+
+  // Handle Excel upload input
+  document.getElementById('veg-excel-file-upload')?.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const nameInp = document.getElementById('external-veg-file');
+    if (nameInp) nameInp.value = file.name;
+
+    try {
+      if (window.XLSX) {
+        const buffer = await file.arrayBuffer();
+        const workbook = window.XLSX.read(buffer, { type: 'array' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const rows = window.XLSX.utils.sheet_to_json(worksheet);
+
+        if (rows && rows.length > 0) {
+          window.READA_EXTERNAL_VEG_CSV = {
+            fileName: file.name,
+            fields: Object.keys(rows[0]),
+            sampleRows: rows
+          };
+          renderVegPreview(rows);
+          showToast(`Read ${rows.length} vegetative rows from Excel sheet "${sheetName}"`);
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      showToast(`Error parsing Excel file: ${err.message}`);
+    }
+  });
 
   function importExternalData() {
     const trial = getCurrentTrial();
@@ -963,17 +994,17 @@
 
     const imported = external.sampleRows.map((r, idx) => ({
       rec: (trial.vegetativeRecords ? trial.vegetativeRecords.length : 0) + idx + 1,
-      plot: r.PLOT,
-      subPlot: '',
-      palmNo: String(r.PALM),
+      plot: r.PLOT || r.PLOT_NO || 1,
+      subPlot: r.SUBPLOT || r.SUB_PLOT || '',
+      palmNo: String(r.PALM || r.PALM_NO || '18'),
       frond: r.FROND || 17,
-      rachisLen: r.RACHIS_CM,
-      petioleW: r.PET_W_CM,
-      petioleD: r.PET_D_CM,
-      pinnaeCount: r.PINNAE,
-      leafletLen: r.LLEN_CM,
-      leafletW: r.LWID_CM,
-      trunkHt: r.TRUNK_M
+      rachisLen: Number(r.RACHIS_CM || r.RACHIS_LEN_CM || 540),
+      petioleW: Number(r.PET_W_CM || r.PETIOLE_W_CM || 5.2),
+      petioleD: Number(r.PET_D_CM || r.PETIOLE_D_CM || 3.8),
+      pinnaeCount: Number(r.PINNAE || r.PINNAE_COUNT || 310),
+      leafletLen: Number(r.LLEN_CM || r.LEAFLET_LEN_CM || 85),
+      leafletW: Number(r.LWID_CM || r.LEAFLET_W_CM || 4.8),
+      trunkHt: Number(r.TRUNK_M || r.TRUNK_HT_M || 3.4)
     }));
 
     if (!trial.vegetativeRecords) trial.vegetativeRecords = [];
@@ -981,7 +1012,7 @@
 
     closeModal(modals.external);
     refreshDashboard();
-    showToast(`Imported ${imported.length} Frond 17 measurements from B:\\VEG93.CSV into ${trial.code}`);
+    showToast(`Imported ${imported.length} Frond 17 measurements from Excel into ${trial.code}`);
   }
 
   // ================= Modal 9: Delete Vegetative Data =================

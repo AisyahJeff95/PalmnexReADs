@@ -345,12 +345,12 @@
             </div>
           </div>
 
-          <!-- Groupbox 2: Analysis, Reporting & ASCII Export -->
+          <!-- Groupbox 2: Analysis, Reporting & CSV Export -->
           <div class="op-groupbox">
             <div class="op-groupbox-header">
               <span class="op-groupbox-title">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                Reporting &amp; ASCII Scientific Export
+                Reporting &amp; CSV Data Export
               </span>
             </div>
             <div class="op-button-list">
@@ -364,7 +364,7 @@
               <button type="button" class="op-btn" id="btn-create-ascii">
                 <div class="op-btn-left">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
-                  <span>Create ASCII Data File (*.dat)</span>
+                  <span>Export Scientific Data (*.csv)</span>
                 </div>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="op-btn-arrow"><polyline points="9 18 15 12 9 6"/></svg>
               </button>
@@ -383,28 +383,28 @@
               <button type="button" class="op-btn" id="btn-save-annual-dbf">
                 <div class="op-btn-left">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
-                  <span>Save Data Into *.dbf / *.csv</span>
+                  <span>Export Data As *.csv File</span>
                 </div>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="op-btn-arrow"><polyline points="9 18 15 12 9 6"/></svg>
               </button>
               <button type="button" class="op-btn" id="btn-make-annual-backup">
                 <div class="op-btn-left">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                  <span>Make Trial BackUp Data</span>
+                  <span>Export Trial Archive (.CSV)</span>
                 </div>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="op-btn-arrow"><polyline points="9 18 15 12 9 6"/></svg>
               </button>
               <button type="button" class="op-btn" id="btn-read-annual-backup">
                 <div class="op-btn-left">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/></svg>
-                  <span>Read Data From BackUp File</span>
+                  <span>Read Data From Backup / Excel</span>
                 </div>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="op-btn-arrow"><polyline points="9 18 15 12 9 6"/></svg>
               </button>
               <button type="button" class="op-btn" id="btn-read-nonreada-annual">
                 <div class="op-btn-left">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
-                  <span>Read 'Non-ReaDA' DBase File</span>
+                  <span>Read From Excel File (*.xlsx)</span>
                 </div>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="op-btn-arrow"><polyline points="9 18 15 12 9 6"/></svg>
               </button>
@@ -866,14 +866,14 @@
 </div>
 
 <!-- =========================================================================
-     MODAL 5: Create ASCII Scientific Export Dialog (CreateAsciiDialog)
+     MODAL 5: Create CSV Scientific Export Dialog (CreateAsciiDialog)
      ========================================================================= -->
 <div class="modal-overlay" id="modal-create-ascii" role="dialog" aria-modal="true" aria-hidden="true">
   <div class="modal-dialog" style="max-width: 580px;">
     <div class="modal-header-bar">
       <div class="modal-title-text">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
-        <span>Create ASCII Data File (*.dat)</span>
+        <span>Export Scientific Data File (*.csv)</span>
       </div>
       <button type="button" class="modal-close-icon" aria-label="Close dialog">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -882,47 +882,47 @@
 
     <div class="modal-body-scroll">
       <div class="form-field">
-        <label for="ascii-filename">Target ASCII File Name</label>
-        <input type="text" class="form-control" id="ascii-filename" value="C:\READA\ANNDATA.DAT" style="font-family: var(--font-mono);">
+        <label for="ascii-filename">Target CSV File Name</label>
+        <input type="text" class="form-control" id="ascii-filename" value="C:\READA\ANNDATA.CSV" style="font-family: var(--font-mono);">
       </div>
       <div class="form-field">
         <label for="ascii-category">Select Data Category to Format</label>
         <select class="form-control" id="ascii-category">
-          <option value="ffb" selected>Fresh Fruit Bunch Yield (DATAFFB)</option>
-          <option value="leaf">Palms Tissue Nutrients (DATALEAF)</option>
-          <option value="veg">Vegetative Morphometrics (DATAVM)</option>
-          <option value="soil">Soil Chemical Analysis (DATASOIL)</option>
+          <option value="ffb" selected>Fresh Fruit Bunch Yield (DATAFFB.CSV)</option>
+          <option value="leaf">Palms Tissue Nutrients (DATALEAF.CSV)</option>
+          <option value="veg">Vegetative Morphometrics (DATAVM.CSV)</option>
+          <option value="soil">Soil Chemical Analysis (DATASOIL.CSV)</option>
         </select>
       </div>
       <div class="form-field">
         <label for="ascii-delimiter">Field Delimiter</label>
         <select class="form-control" id="ascii-delimiter">
-          <option value="space" selected>Fixed Column Width / Space Delimited</option>
-          <option value="comma">Comma Separated (*.csv)</option>
-          <option value="tab">Tab Delimited (*.tsv)</option>
+          <option value="comma" selected>Comma Separated Values (*.csv)</option>
+          <option value="tab">Tab Delimited (*.tsv / *.csv)</option>
+          <option value="space">Space Delimited</option>
         </select>
       </div>
       <div style="font-size: 0.74rem; color: var(--text-faint);">
-        * Produces standard ASCII scientific matrix files suitable for SAS, GenStat, and MPOB biometric regression packages.
+        * Produces standard CSV scientific data files suitable for spreadsheet analysis, SAS, GenStat, and MPOB biometric regression packages.
       </div>
     </div>
 
     <div class="modal-footer-bar">
       <button type="button" class="btn btn-secondary btn-modal-cancel">Cancel</button>
-      <button type="button" class="btn btn-primary" id="btn-confirm-create-ascii">Generate &amp; Download ASCII</button>
+      <button type="button" class="btn btn-primary" id="btn-confirm-create-ascii">Export &amp; Download CSV</button>
     </div>
   </div>
 </div>
 
 <!-- =========================================================================
-     MODAL 6: Save DBF / CSV Export Dialog (SaveAnnualDbfDialog)
+     MODAL 6: Save CSV Export Dialog (SaveAnnualDbfDialog)
      ========================================================================= -->
 <div class="modal-overlay" id="modal-save-annual-dbf" role="dialog" aria-modal="true" aria-hidden="true">
   <div class="modal-dialog" style="max-width: 520px;">
     <div class="modal-header-bar">
       <div class="modal-title-text">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
-        <span>Save Annual Plot Data To *.dbf / *.csv</span>
+        <span>Export Annual Plot Data As *.csv File</span>
       </div>
       <button type="button" class="modal-close-icon" aria-label="Close dialog">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -937,10 +937,10 @@
       <div class="form-field">
         <label for="export-annual-cat">Select Table to Export</label>
         <select class="form-control" id="export-annual-cat">
-          <option value="ffb" selected>DATAFFB.DBF (FFB Yield)</option>
-          <option value="leaf">DATALEAF.DBF (Tissue Nutrients)</option>
-          <option value="veg">DATAVM.DBF (Vegetative Measurements)</option>
-          <option value="soil">DATASOIL.DBF (Soil Nutrients)</option>
+          <option value="ffb" selected>DATAFFB.CSV (FFB Yield)</option>
+          <option value="leaf">DATALEAF.CSV (Tissue Nutrients)</option>
+          <option value="veg">DATAVM.CSV (Vegetative Measurements)</option>
+          <option value="soil">DATASOIL.CSV (Soil Nutrients)</option>
           <option value="all">All 4 Combined (ANNDATA.CSV)</option>
         </select>
       </div>
@@ -961,7 +961,7 @@
 
     <div class="modal-footer-bar">
       <button type="button" class="btn btn-secondary btn-modal-cancel">Cancel</button>
-      <button type="button" class="btn btn-primary" id="btn-confirm-export-annual">Export File</button>
+      <button type="button" class="btn btn-primary" id="btn-confirm-export-annual">Export CSV File</button>
     </div>
   </div>
 </div>
@@ -974,7 +974,7 @@
     <div class="modal-header-bar">
       <div class="modal-title-text">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        <span>Make Trial BackUp Data</span>
+        <span>Export Trial Archive (.CSV)</span>
       </div>
       <button type="button" class="modal-close-icon" aria-label="Close dialog">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -983,20 +983,21 @@
 
     <div class="modal-body-scroll">
       <div class="form-field">
-        <label for="backup-dest-file">Backup Target Archive</label>
-        <input type="text" class="form-control" id="backup-dest-file" value="C:\READA\BCANN.DBF" style="font-family: var(--font-mono);">
+        <label for="backup-dest-file">Backup Target Archive (*.csv)</label>
+        <input type="text" class="form-control" id="backup-dest-file" value="C:\READA\BCANN.CSV" style="font-family: var(--font-mono);">
       </div>
       <div style="background-color: var(--surface-alt); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px; font-size: 0.82rem;">
         <div style="font-weight: 700; color: var(--text); margin-bottom: 6px;">Backup Scope Summary:</div>
         <div>• Trial: <strong id="make-backup-trial">DTP1</strong></div>
         <div>• Datasets: FFB Yield, Foliar Nutrients, Vegetative Canopy, Soil Analysis</div>
         <div>• Total Records: <strong id="make-backup-records">24 Plot Records</strong></div>
+        <div style="margin-top: 6px; color: var(--text-muted); font-size: 0.76rem;">* Standard CSV backup file containing all 4 annual plot datasets.</div>
       </div>
     </div>
 
     <div class="modal-footer-bar">
       <button type="button" class="btn btn-secondary btn-modal-cancel">Cancel</button>
-      <button type="button" class="btn btn-primary" id="btn-confirm-make-backup">Create BackUp Archive</button>
+      <button type="button" class="btn btn-primary" id="btn-confirm-make-backup">Export BackUp Archive (.CSV)</button>
     </div>
   </div>
 </div>
@@ -1009,7 +1010,7 @@
     <div class="modal-header-bar">
       <div class="modal-title-text">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/></svg>
-        <span>Read Data From BackUp File</span>
+        <span>Read Data From Backup / Excel File</span>
       </div>
       <button type="button" class="modal-close-icon" aria-label="Close dialog">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -1018,9 +1019,14 @@
 
     <div class="modal-body-scroll">
       <div class="form-field">
-        <label for="read-backup-path">{ Enter -> Drive\Directory\BackUp File Name }</label>
+        <label for="backup-excel-file-upload">Select Excel (*.xlsx / *.xls) or CSV Backup File</label>
+        <input type="file" id="backup-excel-file-upload" accept=".xlsx,.xls,.csv" class="form-control" style="font-size: 0.8rem; padding: 6px; margin-bottom: 8px;">
+      </div>
+
+      <div class="form-field">
+        <label for="read-backup-path">Or Backup File Name / Reference</label>
         <div style="display: flex; gap: 8px;">
-          <input type="text" class="form-control" id="read-backup-path" value="C:\READA\BCANN.DBF" style="font-family: var(--font-mono); flex: 1;">
+          <input type="text" class="form-control" id="read-backup-path" value="C:\READA\BCANN.CSV" style="font-family: var(--font-mono); flex: 1;">
           <button type="button" class="btn btn-secondary" id="btn-verify-backup-file">Verify Archive</button>
         </div>
       </div>
@@ -1061,14 +1067,14 @@
 </div>
 
 <!-- =========================================================================
-     MODAL 9: Read 'Non-ReaDA' DBase File Dialog
+     MODAL 9: Read 'Non-ReaDA' Excel / CSV File Dialog
      ========================================================================= -->
 <div class="modal-overlay" id="modal-read-nonreada" role="dialog" aria-modal="true" aria-hidden="true">
   <div class="modal-dialog" style="max-width: 860px;">
     <div class="modal-header-bar">
       <div class="modal-title-text">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
-        <span>Read 'Non-ReaDA' DBase / CSV File</span>
+        <span>Read Annual Plot Data From Excel Spreadsheet (*.xlsx / *.xls)</span>
       </div>
       <button type="button" class="modal-close-icon" aria-label="Close dialog">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -1076,17 +1082,15 @@
     </div>
 
     <div class="modal-body-scroll">
-      <div style="display: flex; gap: 10px; align-items: flex-end;">
-        <div class="form-field" style="flex: 1; margin-bottom: 0;">
-          <label for="nonreada-file-path">External File Location</label>
-          <input type="text" class="form-control" id="nonreada-file-path" value="B:\ANNDAT95.DBF" style="font-family: var(--font-mono);">
-        </div>
-        <button type="button" class="btn btn-secondary" id="btn-load-nonreada-preview">Load Preview</button>
+      <div class="form-field">
+        <label for="annual-excel-file-upload">Select Excel Spreadsheet (*.xlsx, *.xls) or CSV</label>
+        <input type="file" id="annual-excel-file-upload" accept=".xlsx,.xls,.csv" class="form-control" style="font-size: 0.8rem; padding: 6px;">
+        <span style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-top: 4px;">Upload external spreadsheet to automatically populate plot columns into ReaDA.</span>
       </div>
 
       <div style="border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden;">
-        <div style="background-color: var(--surface-alt); padding: 10px 14px; font-size: 0.8rem; font-weight: 700; color: var(--text); border-bottom: 1px solid var(--border);">
-          External File Preview (B:\ANNDAT95.DBF)
+        <div style="background-color: var(--surface-alt); padding: 10px 14px; font-size: 0.8rem; font-weight: 700; color: var(--text); border-bottom: 1px solid var(--border);" id="preview-sheet-title">
+          Excel Spreadsheet Preview
         </div>
         <div class="grid-table-wrap" style="max-height: 220px; border: none;">
           <table class="grid-table" style="font-size: 0.78rem;" id="table-nonreada-preview">
@@ -1114,7 +1118,7 @@
       <button type="button" class="btn btn-secondary btn-modal-cancel">Cancel</button>
       <button type="button" class="btn btn-primary" id="btn-confirm-import-nonreada">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;"><polyline points="20 6 9 17 4 12"/></svg>
-        Import Non-ReaDA Records
+        Import Excel Records
       </button>
     </div>
   </div>
@@ -1171,6 +1175,7 @@
 </div>
 
 <!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="assets/js/trial-data.js"></script>
 <script src="assets/js/annual-plot-data.js"></script>
 </body>

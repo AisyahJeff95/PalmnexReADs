@@ -858,43 +858,43 @@
   }
 
   // --------------------------------------------------------------------------
-  // Export Boundaries as GeoJSON
+  // Export Boundaries as CSV ONLY (No JSON / No DBF)
   // --------------------------------------------------------------------------
-  function exportBoundariesGeoJSON() {
+  function exportBoundariesCSV() {
     if (state.drawnLayers.length === 0 && state.uploadedLayers.length === 0) {
       alert('No boundaries have been drawn or uploaded yet.');
       return;
     }
 
-    const features = [];
+    let csvContent = 'TRIAL_CODE,BOUNDARY_NAME,AREA_HECTARES,POINT_INDEX,LATITUDE,LONGITUDE\n';
 
     state.drawnLayers.forEach(d => {
-      features.push({
-        type: 'Feature',
-        properties: {
-          name: d.name,
-          trialCode: d.trialCode,
-          areaHectares: d.areaHa
-        },
-        geometry: {
-          type: 'Polygon',
-          coordinates: [
-            [...d.latLngs.map(p => [p.lng, p.lat]), [d.latLngs[0].lng, d.latLngs[0].lat]]
-          ]
-        }
+      d.latLngs.forEach((pt, idx) => {
+        csvContent += `"${d.trialCode || ''}","${(d.name || '').replace(/"/g, '""')}",${d.areaHa.toFixed(4)},${idx + 1},${pt.lat.toFixed(6)},${pt.lng.toFixed(6)}\n`;
       });
     });
 
-    const geojson = {
-      type: 'FeatureCollection',
-      features: features
-    };
+    state.uploadedLayers.forEach((layer, lIdx) => {
+      if (layer.eachLayer) {
+        layer.eachLayer(subLayer => {
+          if (subLayer.getLatLngs) {
+            const rawPts = subLayer.getLatLngs()[0] || subLayer.getLatLngs();
+            const pts = Array.isArray(rawPts) ? rawPts : [rawPts];
+            pts.forEach((pt, idx) => {
+              if (pt && pt.lat !== undefined) {
+                csvContent += `"IMPORTED","Uploaded Boundary ${lIdx + 1}",0,${idx + 1},${pt.lat.toFixed(6)},${pt.lng.toFixed(6)}\n`;
+              }
+            });
+          }
+        });
+      }
+    });
 
-    const blob = new Blob([JSON.stringify(geojson, null, 2)], { type: 'application/geo+json' });
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `mpob_trial_boundaries_${new Date().toISOString().slice(0, 10)}.geojson`;
+    a.download = `mpob_trial_boundaries_${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -957,7 +957,8 @@
     deleteBoundary,
     openUploadModal,
     closeUploadModal,
-    exportBoundariesGeoJSON
+    exportBoundariesCSV,
+    exportBoundariesGeoJSON: exportBoundariesCSV
   };
 
 })();

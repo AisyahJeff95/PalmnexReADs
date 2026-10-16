@@ -313,21 +313,21 @@
               <button type="button" class="op-btn" id="btn-save-veg-dbf">
                 <div class="op-btn-left">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
-                  <span>Save Vegetative Data As *.dbf / *.csv</span>
+                  <span>Export Vegetative Data As *.csv File</span>
                 </div>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="op-btn-arrow"><polyline points="9 18 15 12 9 6"/></svg>
               </button>
               <button type="button" class="op-btn" id="btn-read-veg-backup">
                 <div class="op-btn-left">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/></svg>
-                  <span>Read Vegetative Data From BackUp</span>
+                  <span>Read Vegetative Data From Backup / Excel</span>
                 </div>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="op-btn-arrow"><polyline points="9 18 15 12 9 6"/></svg>
               </button>
               <button type="button" class="op-btn" id="btn-read-external-veg">
                 <div class="op-btn-left">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
-                  <span>Read From 'Non-ReaDA' CSV / DBF</span>
+                  <span>Read From Excel File (*.xlsx)</span>
                 </div>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="op-btn-arrow"><polyline points="9 18 15 12 9 6"/></svg>
               </button>
@@ -851,10 +851,7 @@
       </div>
       <div class="form-field">
         <label for="export-veg-format">File Format</label>
-        <select class="form-control" id="export-veg-format">
-          <option value="csv" selected>Standard CSV Text File (*.CSV)</option>
-          <option value="dbf">dBase III+ File (*.DBF)</option>
-        </select>
+        <input type="text" class="form-control" id="export-veg-format" value="Standard CSV Text File (*.CSV)" readonly style="font-weight: 600; color: var(--brand-green);">
       </div>
       <div class="form-field">
         <label>Data Scope</label>
@@ -945,7 +942,7 @@
     <div class="modal-header-bar">
       <div class="modal-title-text">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
-        <span>Import Non-ReaDA Data File (Field Caliper / Hypsometer)</span>
+        <span>Read Vegetative Data From Excel Spreadsheet (*.xlsx / *.xls)</span>
       </div>
       <button type="button" class="modal-close-icon" aria-label="Close dialog">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -953,10 +950,14 @@
     </div>
 
     <div class="modal-body-scroll">
+      <div class="form-field" style="margin-bottom: 8px;">
+        <label for="veg-excel-file-upload">Choose Excel File (.xlsx / .xls) to Read:</label>
+        <input type="file" id="veg-excel-file-upload" accept=".xlsx,.xls,.csv" class="form-control" style="font-size: 0.8rem; padding: 6px;">
+      </div>
       <div style="display: flex; gap: 12px; align-items: flex-end;">
         <div class="form-field" style="flex: 1; margin-bottom: 0;">
-          <label for="external-veg-file">External File Path</label>
-          <input type="text" class="form-control" id="external-veg-file" value="B:\VEG93.CSV" style="font-family: var(--font-mono);">
+          <label for="external-veg-file">External File Path / Name</label>
+          <input type="text" class="form-control" id="external-veg-file" value="B:\VEG93.XLSX" style="font-family: var(--font-mono);" readonly>
         </div>
         <button type="button" class="btn btn-secondary" id="btn-load-external-veg-preview">
           Load Preview
@@ -1059,6 +1060,7 @@
 
 <!-- Scripts -->
 <script src="assets/js/trial-data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="assets/js/vegetative-sampling.js"></script>
 </body>
 </html>
