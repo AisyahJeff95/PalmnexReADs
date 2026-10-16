@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ReaDA - Modern Oil Palm Agronomic Research Data Suite</title>
+  
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+
+  <!-- Background Ambient Mesh -->
+  <div class="bg-mesh"></div>
+
+  <div class="app-container">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo">
+          <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+          </svg>
+        </div>
+        <div>
+          <div class="brand-title">ReaDA</div>
+          <div class="brand-subtitle">MPOB Research Suite</div>
+        </div>
+      </div>
+
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <button class="active" data-nav="dashboard">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+            <span>Executive Dashboard</span>
+          </button>
+        </li>
+        <li class="nav-item">
+          <button data-nav="trials">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+            <span>Trial Management</span>
+          </button>
+        </li>
+        <li class="nav-item">
+          <button data-nav="data-grid">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            <span>Agronomic Data Grid</span>
+          </button>
+        </li>
+        <li class="nav-item">
+          <button data-nav="import-export">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+            <span>Import / Export DBF</span>
+          </button>
+        </li>
+      </ul>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      
+      <!-- Top Action Bar -->
+      <header class="top-bar">
+        <div class="top-bar-title">
+          <h1>MPOB Agronomy Research Data</h1>
+          <p>Oil Palm Trial Analytics & Laboratory Database</p>
+        </div>
+        <div class="top-bar-actions">
+          <button class="btn btn-secondary btn-icon" id="btn-theme-toggle" title="Toggle Theme">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+          </button>
+          <button class="btn btn-secondary" id="btn-reset-data">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            <span>Reset Demo</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Panel 1: Executive Dashboard -->
+      <section id="panel-dashboard" class="view-panel">
+        
+        <!-- Metric Cards -->
+        <div class="metrics-grid">
+          <div class="glass-card metric-card">
+            <div class="metric-header">
+              <span>Managed Research Trials</span>
+              <div class="metric-icon">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+              </div>
+            </div>
+            <div class="metric-value" id="kpi-total-trials">3</div>
+            <div class="metric-subtext">Active MPOB Research Stations</div>
+          </div>
+
+          <div class="glass-card metric-card gold">
+            <div class="metric-header">
+              <span>Average FFB Yield</span>
+              <div class="metric-icon" style="color:var(--accent-gold);">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+              </div>
+            </div>
+            <div class="metric-value" id="kpi-avg-yield">25.4 T/ha</div>
+            <div class="metric-subtext"><span class="trend-up">↑ 4.2%</span> vs regional baseline</div>
+          </div>
+
+          <div class="glass-card metric-card blue">
+            <div class="metric-header">
+              <span>Deficient Tissue Samples</span>
+              <div class="metric-icon" style="color:var(--accent-blue);">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+              </div>
+            </div>
+            <div class="metric-value" id="kpi-deficient">1</div>
+            <div class="metric-subtext">Requires Nitrogen/Phosphorus attention</div>
+          </div>
+        </div>
+
+        <!-- Dashboard Charts Grid -->
+        <div class="dashboard-grid" style="margin-top: 1.5rem;">
+          
+          <div class="glass-card chart-card">
+            <div class="chart-header">
+              <div class="chart-title">
+                <h3>FFB Yield Progression Across Trials</h3>
+              </div>
+              <span class="badge badge-optimum">Fresh Fruit Bunch (T/Ha)</span>
+            </div>
+            <div class="chart-container" id="chart-yield-trend"></div>
+          </div>
+
+          <div class="glass-card chart-card">
+            <div class="chart-header">
+              <div class="chart-title">
+                <h3>Leaf Nutrient Radar</h3>
+              </div>
+              <span class="badge badge-excess">vs MPOB Standards</span>
+            </div>
+            <div id="chart-nutrient-radar" style="display:flex;justify-content:center;"></div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Panel 2: Trial Management -->
+      <section id="panel-trials" class="view-panel" style="display: none;">
+        <div class="glass-card" style="display: flex; flex-direction: column; gap: 1.5rem;">
+          <div class="filter-bar">
+            <div>
+              <h2>Research Trial Management</h2>
+              <p>Manage trial codes, estates, planting density, and treatment factors</p>
+            </div>
+            <button class="btn btn-primary" id="btn-add-trial">
+              <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+              <span>Add New Trial</span>
+            </button>
+          </div>
+
+          <div id="table-trials-container"></div>
+        </div>
+      </section>
+
+      <!-- Panel 3: Agronomic Data Grid -->
+      <section id="panel-data-grid" class="view-panel" style="display: none;">
+        <div class="glass-card" style="display: flex; flex-direction: column; gap: 1.5rem;">
+          <div class="filter-bar">
+            <div>
+              <h2>Agronomic Laboratory & Field Data Grid</h2>
+              <p>View and edit field readings for leaf analysis, yield, and vegetative metrics</p>
+            </div>
+            <div style="display:flex;gap:0.75rem;">
+              <button class="btn btn-secondary" id="btn-add-leaf">Add Leaf Sample</button>
+              <button class="btn btn-primary" id="btn-add-yield">Add FFB Yield</button>
+            </div>
+          </div>
+
+          <!-- Sub-tabs -->
+          <div class="tabs-header">
+            <button class="tab-btn active" data-tab="leaf">Leaf Tissue Analysis</button>
+            <button class="tab-btn" data-tab="yield">FFB Yield Recording</button>
+            <button class="tab-btn" data-tab="veg">Vegetative Measurements</button>
+          </div>
+
+          <!-- Sub-panels -->
+          <div id="subpanel-leaf" class="subtab-panel">
+            <div id="table-leaf-container"></div>
+          </div>
+
+          <div id="subpanel-yield" class="subtab-panel" style="display: none;">
+            <div id="table-yield-container"></div>
+          </div>
+
+          <div id="subpanel-veg" class="subtab-panel" style="display: none;">
+            <div id="table-veg-container"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Panel 4: Import / Export DBF -->
+      <section id="panel-import-export" class="view-panel" style="display: none;">
+        <div class="glass-card" style="display: flex; flex-direction: column; gap: 1.5rem;">
+          <div>
+            <h2>Import & Export Legacy dBase (.DBF) Files</h2>
+            <p>Drag and drop legacy ReaDA files (e.g., DATAVEG.DBF, ACFSLEAF.DBF, ACFSINFO.DBF) to parse and load into the modern database.</p>
+          </div>
+
+          <div class="dropzone" id="file-dropzone">
+            <div class="dropzone-icon">
+              <svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+            </div>
+            <div>
+              <h3 style="margin-bottom: 0.25rem;">Drop legacy .DBF or .CSV files here</h3>
+              <p>or click to browse from your computer</p>
+            </div>
+            <input type="file" id="file-input" accept=".dbf,.DBF,.csv,.CSV" style="display: none;">
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Modal: Add Trial -->
+  <div class="modal-overlay" id="modal-add-trial">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Create New Research Trial</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <form id="form-add-trial">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Trial Code</label>
+            <input type="text" name="TRIAL_CODE" class="form-control" placeholder="e.g. PR2024/1" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Estate / Station</label>
+            <input type="text" name="ESTATE" class="form-control" placeholder="e.g. Banting Station" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Planting Year</label>
+            <input type="number" name="PL_YEAR" class="form-control" value="2022" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Planting Density (palms/ha)</label>
+            <input type="number" name="PL_DENSITY" class="form-control" value="148" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Treatment Factors</label>
+            <input type="text" name="TOT_FACTOR" class="form-control" value="F3 (N x P x K)">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Progeny</label>
+            <input type="text" name="PROGENY" class="form-control" value="DxP AVROS">
+          </div>
+        </div>
+        <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 1rem;">
+          <button type="button" class="btn btn-secondary modal-close">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Trial</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Add Leaf Record -->
+  <div class="modal-overlay" id="modal-add-leaf">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Add Leaf Tissue Sample Reading</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <form id="form-add-leaf">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Trial Code</label>
+            <input type="text" name="TRIAL_CODE" class="form-control" value="PR1998/1" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Palm Number</label>
+            <input type="number" name="PALM_NO" class="form-control" value="105" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nitrogen N (%)</label>
+            <input type="number" step="0.01" name="TISSUE_N" class="form-control" value="2.65" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phosphorus P (%)</label>
+            <input type="number" step="0.01" name="TISSUE_P" class="form-control" value="0.16" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Potassium K (%)</label>
+            <input type="number" step="0.01" name="TISSUE_K" class="form-control" value="1.18" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Boron B (ppm)</label>
+            <input type="number" step="0.1" name="TISSUE_B" class="form-control" value="18.5" required>
+          </div>
+        </div>
+        <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 1rem;">
+          <button type="button" class="btn btn-secondary modal-close">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Sample Reading</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Add FFB Yield -->
+  <div class="modal-overlay" id="modal-add-yield">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Record FFB Yield Entry</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <form id="form-add-yield">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Trial Code</label>
+            <input type="text" name="TRIAL_CODE" class="form-control" value="PR1998/1" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Recording Year</label>
+            <input type="text" name="YEAR_CODE" class="form-control" value="2023" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Palm Number</label>
+            <input type="number" name="PALM_NO" class="form-control" value="101" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Bunch Count</label>
+            <input type="number" name="BUNCH_NO" class="form-control" value="18" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Total Bunch Weight (kg)</label>
+            <input type="number" step="0.1" name="BUNCH_WT" class="form-control" value="285.0" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">FFB Yield (Tonnes/Ha)</label>
+            <input type="number" step="0.1" name="FFB_YIELD" class="form-control" value="25.5" required>
+          </div>
+        </div>
+        <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 1rem;">
+          <button type="button" class="btn btn-secondary modal-close">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Yield Entry</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- JavaScript Modules -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

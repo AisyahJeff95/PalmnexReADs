@@ -1,0 +1,18 @@
+;;..........................................................................
+;; INSTDEL.LST
+;; Copyright (C) 1994 Borland International, Inc.  All Rights Reserved.
+;;..........................................................................
+;; List below files that the product-specific install adds to INSTXTRA.PAK.
+;; All files listed below will be assumed to reside in the TEMP directory
+;; and will be deleted.
+;;
+;; Example:
+;;    OFFICE.HLP
+;;
+;; NOTE: Be sure the name of each file begins in the first column of the
+;;       line.
+;;..........................................................................
+IDAPINST.DLL
+IDAPINST.HLP
+INSTBOR.DLL
+DEPINSTL.HLP
