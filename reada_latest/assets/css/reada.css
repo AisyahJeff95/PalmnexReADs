@@ -2157,6 +2157,32 @@ textarea.form-control {
   gap: 12px;
 }
 
+.home-start-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  background: rgba(15, 23, 42, 0.48);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  align-self: flex-start;
+  margin-top: 4px;
+  margin-bottom: -4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.home-start-label svg {
+  width: 13px;
+  height: 13px;
+  color: #4ade80;
+}
+
 .home-smart-card {
   display: flex;
   align-items: center;
