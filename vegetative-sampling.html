@@ -890,10 +890,16 @@
 
     <div class="modal-body-scroll">
       <div class="form-field">
-        <label for="backup-veg-path">{ Enter -> Drive\Directory\BackUp File Name }</label>
-        <div style="display: flex; gap: 8px;">
-          <input type="text" class="form-control" id="backup-veg-path" value="C:\READA\BCVM.DBF" style="font-family: var(--font-mono); flex: 1;">
-          <button type="button" class="btn btn-secondary" id="btn-view-backup-info">View Information</button>
+        <label>Upload Excel Backup File (.xlsx / .xls / .csv):</label>
+        <div id="veg-backup-drop-zone" class="upload-drop-zone" onclick="document.getElementById('veg-backup-file-upload').click()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width: 38px; height: 38px; color: var(--brand-green); margin: 0 auto 8px; display: block;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <div id="veg-backup-drop-title" style="font-weight: 700; color: var(--text); font-size: 0.88rem; margin-bottom: 4px;">
+            Click to Browse or Drag &amp; Drop Excel File Here
+          </div>
+          <div style="font-size: 0.75rem; color: var(--text-muted);">
+            Supports Excel Spreadsheets (.xlsx, .xls) or CSV (.csv)
+          </div>
+          <input type="file" id="veg-backup-file-upload" accept=".xlsx,.xls,.csv" style="display: none;">
         </div>
       </div>
 
@@ -920,7 +926,7 @@
         </div>
         <div style="display: flex; justify-content: space-between; font-size: 0.78rem;">
           <span style="color: var(--text-muted);">Backup Archive Status:</span>
-          <span style="color: var(--brand-green); font-weight: 600;">Verified (100% Match)</span>
+          <span id="veg-backup-status-text" style="color: var(--brand-green); font-weight: 600;">Waiting for Excel file upload</span>
         </div>
       </div>
     </div>
@@ -949,27 +955,23 @@
 
     <div class="modal-body-scroll">
       <div class="form-field" style="margin-bottom: 8px;">
-        <label for="veg-excel-file-upload">Choose Excel File (.xlsx / .xls) to Read:</label>
-        <input type="file" id="veg-excel-file-upload" accept=".xlsx,.xls,.csv" class="form-control" style="font-size: 0.8rem; padding: 6px;">
-      </div>
-      <div style="display: flex; gap: 12px; align-items: flex-end;">
-        <div class="form-field" style="flex: 1; margin-bottom: 0;">
-          <label for="external-veg-file">External File Path / Name</label>
-          <input type="text" class="form-control" id="external-veg-file" value="B:\VEG93.XLSX" style="font-family: var(--font-mono);" readonly>
+        <label>Upload Excel File (.xlsx / .xls / .csv) to Read:</label>
+        <div id="veg-external-drop-zone" class="upload-drop-zone" onclick="document.getElementById('veg-excel-file-upload').click()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width: 36px; height: 36px; color: var(--brand-green); margin: 0 auto 8px; display: block;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <div id="veg-external-drop-title" style="font-weight: 700; color: var(--text); font-size: 0.88rem; margin-bottom: 4px;">
+            Click to Browse or Drag &amp; Drop Excel File Here
+          </div>
+          <div style="font-size: 0.75rem; color: var(--text-muted);">
+            Supports Excel Spreadsheets (.xlsx, .xls) or CSV (.csv)
+          </div>
+          <input type="file" id="veg-excel-file-upload" accept=".xlsx,.xls,.csv" style="display: none;">
         </div>
-        <button type="button" class="btn btn-secondary" id="btn-load-external-veg-preview">
-          Load Preview
-        </button>
-      </div>
-
-      <div style="font-size: 0.8rem; color: var(--text-muted);">
-        Simulating data import from external digital forest caliper and hypsometer logger (Figure 24 / B:\VEG93.CSV).
       </div>
 
       <!-- External Field Mapping & Preview -->
       <div style="border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden;">
-        <div style="background-color: var(--surface-alt); padding: 10px 14px; font-size: 0.8rem; font-weight: 700; color: var(--text); border-bottom: 1px solid var(--border);">
-          External File Rows Preview (B:\VEG93.CSV)
+        <div id="veg-external-preview-title" style="background-color: var(--surface-alt); padding: 10px 14px; font-size: 0.8rem; font-weight: 700; color: var(--text); border-bottom: 1px solid var(--border);">
+          Uploaded Excel Rows Preview
         </div>
         <div class="grid-table-wrap" style="max-height: 220px; border: none;">
           <table class="grid-table" style="font-size: 0.78rem;" id="table-external-veg-preview">

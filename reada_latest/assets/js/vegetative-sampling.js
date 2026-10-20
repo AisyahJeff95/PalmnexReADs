@@ -885,8 +885,17 @@
   }
 
   // ================= Modal 7: Read Backup / Excel =================
+  let uploadedVegBackupFile = null;
 
   function openBackupModal() {
+    uploadedVegBackupFile = null;
+    const fileInp = document.getElementById('veg-backup-file-upload');
+    const dropTitle = document.getElementById('veg-backup-drop-title');
+    const statusText = document.getElementById('veg-backup-status-text');
+    if (fileInp) fileInp.value = '';
+    if (dropTitle) dropTitle.textContent = 'Click to Browse or Drag & Drop Excel File Here';
+    if (statusText) statusText.textContent = 'Waiting for Excel file upload';
+
     const tbody = document.getElementById('tbody-backup-trials');
     if (tbody) {
       tbody.innerHTML = trials.map(t => {
@@ -904,13 +913,65 @@
     openModal(modals.backup);
   }
 
+  async function handleVegBackupFileSelect(file) {
+    if (!file) return;
+    uploadedVegBackupFile = file;
+    const dropTitle = document.getElementById('veg-backup-drop-title');
+    const statusText = document.getElementById('veg-backup-status-text');
+    if (dropTitle) dropTitle.textContent = `Selected: ${file.name}`;
+
+    try {
+      if (window.XLSX) {
+        const buffer = await file.arrayBuffer();
+        const workbook = window.XLSX.read(buffer, { type: 'array' });
+        const sheetName = workbook.SheetNames[0];
+        const rows = window.XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+        if (statusText) {
+          statusText.textContent = `Verified: ${file.name} (${rows.length} rows in "${sheetName}")`;
+        }
+        showToast(`Verified "${file.name}" (${rows.length} rows)`);
+      } else if (statusText) {
+        statusText.textContent = `Verified: ${file.name}`;
+      }
+    } catch (err) {
+      console.error(err);
+      showToast(`Error parsing backup file: ${err.message}`);
+    }
+  }
+
+  document.getElementById('veg-backup-file-upload')?.addEventListener('change', (e) => {
+    handleVegBackupFileSelect(e.target.files[0]);
+  });
+
+  const vegBackupDropZone = document.getElementById('veg-backup-drop-zone');
+  if (vegBackupDropZone) {
+    vegBackupDropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      vegBackupDropZone.classList.add('dragover');
+    });
+    vegBackupDropZone.addEventListener('dragleave', () => {
+      vegBackupDropZone.classList.remove('dragover');
+    });
+    vegBackupDropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      vegBackupDropZone.classList.remove('dragover');
+      if (e.dataTransfer?.files?.length) {
+        handleVegBackupFileSelect(e.dataTransfer.files[0]);
+      }
+    });
+  }
+
   function restoreFromBackup() {
+    if (!uploadedVegBackupFile) {
+      showToast('Please select or drop an Excel file (.xlsx, .xls, .csv) first');
+      return;
+    }
     const trial = getCurrentTrial();
     if (!trial) return;
 
     closeModal(modals.backup);
     refreshDashboard();
-    showToast(`Restored backup vegetative data for ${trial.code} from CSV / Excel`);
+    showToast(`Restored backup vegetative data for ${trial.code} from "${uploadedVegBackupFile.name}"`);
   }
 
   // ================= Modal 8: Read External Excel Data (*.xlsx / *.xls / *.csv) =================
@@ -936,6 +997,11 @@
   }
 
   function openExternalModal() {
+    const fileInp = document.getElementById('veg-excel-file-upload');
+    const dropTitle = document.getElementById('veg-external-drop-title');
+    if (fileInp) fileInp.value = '';
+    if (dropTitle) dropTitle.textContent = 'Click to Browse or Drag & Drop Excel File Here';
+
     const external = window.READA_EXTERNAL_VEG_CSV;
     if (external && external.sampleRows) {
       renderVegPreview(external.sampleRows);
@@ -943,12 +1009,11 @@
     openModal(modals.external);
   }
 
-  // Handle Excel upload input
-  document.getElementById('veg-excel-file-upload')?.addEventListener('change', async (e) => {
-    const file = e.target.files[0];
+  async function handleVegExternalFileSelect(file) {
     if (!file) return;
-    const nameInp = document.getElementById('external-veg-file');
-    if (nameInp) nameInp.value = file.name;
+    const dropTitle = document.getElementById('veg-external-drop-title');
+    const previewTitle = document.getElementById('veg-external-preview-title');
+    if (dropTitle) dropTitle.textContent = `Selected: ${file.name}`;
 
     try {
       if (window.XLSX) {
@@ -964,6 +1029,7 @@
             fields: Object.keys(rows[0]),
             sampleRows: rows
           };
+          if (previewTitle) previewTitle.textContent = `Uploaded Excel Rows Preview (${file.name} · Sheet: ${sheetName})`;
           renderVegPreview(rows);
           showToast(`Read ${rows.length} vegetative rows from Excel sheet "${sheetName}"`);
         }
@@ -972,7 +1038,30 @@
       console.error(err);
       showToast(`Error parsing Excel file: ${err.message}`);
     }
+  }
+
+  // Handle Excel upload input
+  document.getElementById('veg-excel-file-upload')?.addEventListener('change', (e) => {
+    handleVegExternalFileSelect(e.target.files[0]);
   });
+
+  const vegExternalDropZone = document.getElementById('veg-external-drop-zone');
+  if (vegExternalDropZone) {
+    vegExternalDropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      vegExternalDropZone.classList.add('dragover');
+    });
+    vegExternalDropZone.addEventListener('dragleave', () => {
+      vegExternalDropZone.classList.remove('dragover');
+    });
+    vegExternalDropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      vegExternalDropZone.classList.remove('dragover');
+      if (e.dataTransfer?.files?.length) {
+        handleVegExternalFileSelect(e.dataTransfer.files[0]);
+      }
+    });
+  }
 
   function importExternalData() {
     const trial = getCurrentTrial();

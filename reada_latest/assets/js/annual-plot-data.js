@@ -2310,17 +2310,24 @@
   }
 
   // ================= Modal 8: Read Data From BackUp File =================
+  let uploadedAnnualBackupFile = null;
 
   function openReadBackupDialog() {
+    uploadedAnnualBackupFile = null;
+    const fileInp = document.getElementById('backup-excel-file-upload');
+    const dropTitle = document.getElementById('annual-backup-drop-title');
+    const statusText = document.getElementById('annual-backup-status-text');
+    if (fileInp) fileInp.value = '';
+    if (dropTitle) dropTitle.textContent = 'Click to Browse or Drag & Drop Excel File Here';
+    if (statusText) statusText.textContent = 'Waiting for Excel file upload';
     openModal(modals.readBackup);
   }
 
-  function handleVerifyBackupArchive() {
-    const path = document.getElementById('read-backup-path')?.value || 'BCANN.CSV';
-    showToast(`Archive ${path} verified: CRC-32 valid, 2 trial sets detected.`);
-  }
-
   function handleConfirmReadBackup() {
+    if (!uploadedAnnualBackupFile) {
+      showToast('Please select or drop an Excel file (.xlsx, .xls, .csv) first');
+      return;
+    }
     const trial = getCurrentTrial();
     if (!trial) return;
 
@@ -2331,12 +2338,16 @@
 
     renderAll();
     closeModal(modals.readBackup);
-    showToast(`Restored annual plot records for ${trial.code} from BackUp archive.`);
+    showToast(`Restored annual plot records for ${trial.code} from "${uploadedAnnualBackupFile.name}".`);
   }
 
   // ================= Modal 9: Read 'Non-ReaDA' DBase File =================
 
   function openReadNonReadaDialog() {
+    const fileInp = document.getElementById('annual-excel-file-upload');
+    const dropTitle = document.getElementById('annual-nonreada-drop-title');
+    if (fileInp) fileInp.value = '';
+    if (dropTitle) dropTitle.textContent = 'Click to Browse or Drag & Drop Excel File Here';
     renderNonReadaPreview();
     openModal(modals.readNonReada);
   }
@@ -2421,12 +2432,13 @@
   }
 
   // Handle Backup Excel/CSV upload
-  function handleBackupExcelUpload(e) {
-    const file = e.target.files[0];
+  function processBackupExcelFile(file) {
     if (!file) return;
+    uploadedAnnualBackupFile = file;
 
-    const pathInput = document.getElementById('read-backup-path');
-    if (pathInput) pathInput.value = file.name;
+    const dropTitle = document.getElementById('annual-backup-drop-title');
+    const statusText = document.getElementById('annual-backup-status-text');
+    if (dropTitle) dropTitle.textContent = `Selected: ${file.name}`;
 
     try {
       if (window.XLSX) {
@@ -2437,11 +2449,16 @@
           const sheetName = workbook.SheetNames[0];
           const worksheet = workbook.Sheets[sheetName];
           const rows = window.XLSX.utils.sheet_to_json(worksheet);
+          if (statusText) {
+            statusText.textContent = `Verified: ${file.name} (${rows.length} rows in "${sheetName}")`;
+          }
           if (rows && rows.length > 0) {
             showToast(`Archive verified: ${rows.length} rows loaded from Excel sheet "${sheetName}".`);
           }
         };
         reader.readAsArrayBuffer(file);
+      } else if (statusText) {
+        statusText.textContent = `Verified: ${file.name}`;
       }
     } catch (err) {
       console.error(err);
@@ -2449,10 +2466,15 @@
     }
   }
 
+  function handleBackupExcelUpload(e) {
+    processBackupExcelFile(e.target.files[0]);
+  }
+
   // Handle Non-ReaDA Excel spreadsheet upload using SheetJS
-  function handleAnnualExcelUpload(e) {
-    const file = e.target.files[0];
+  function processAnnualExcelFile(file) {
     if (!file) return;
+    const dropTitle = document.getElementById('annual-nonreada-drop-title');
+    if (dropTitle) dropTitle.textContent = `Selected: ${file.name}`;
 
     try {
       if (window.XLSX) {
@@ -2504,6 +2526,10 @@
       console.error(err);
       showToast(`Error parsing Excel file: ${err.message}`);
     }
+  }
+
+  function handleAnnualExcelUpload(e) {
+    processAnnualExcelFile(e.target.files[0]);
   }
 
   // ================= Modal 10: Delete Annual Plot Data =================
@@ -2737,14 +2763,47 @@
     document.getElementById('btn-confirm-make-backup')?.addEventListener('click', handleConfirmMakeBackup);
 
     // Modal 8: Read Backup Triggers
-    document.getElementById('btn-verify-backup-file')?.addEventListener('click', handleVerifyBackupArchive);
     document.getElementById('btn-confirm-read-backup')?.addEventListener('click', handleConfirmReadBackup);
     document.getElementById('backup-excel-file-upload')?.addEventListener('change', handleBackupExcelUpload);
+    const annualBackupDropZone = document.getElementById('annual-backup-drop-zone');
+    if (annualBackupDropZone) {
+      annualBackupDropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        annualBackupDropZone.classList.add('dragover');
+      });
+      annualBackupDropZone.addEventListener('dragleave', () => {
+        annualBackupDropZone.classList.remove('dragover');
+      });
+      annualBackupDropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        annualBackupDropZone.classList.remove('dragover');
+        if (e.dataTransfer?.files?.length) {
+          processBackupExcelFile(e.dataTransfer.files[0]);
+        }
+      });
+    }
 
     // Modal 9: Read Non-ReaDA Triggers
     document.getElementById('btn-load-nonreada-preview')?.addEventListener('click', renderNonReadaPreview);
     document.getElementById('btn-confirm-import-nonreada')?.addEventListener('click', handleConfirmImportNonReada);
     document.getElementById('annual-excel-file-upload')?.addEventListener('change', handleAnnualExcelUpload);
+    const annualNonReadaDropZone = document.getElementById('annual-nonreada-drop-zone');
+    if (annualNonReadaDropZone) {
+      annualNonReadaDropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        annualNonReadaDropZone.classList.add('dragover');
+      });
+      annualNonReadaDropZone.addEventListener('dragleave', () => {
+        annualNonReadaDropZone.classList.remove('dragover');
+      });
+      annualNonReadaDropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        annualNonReadaDropZone.classList.remove('dragover');
+        if (e.dataTransfer?.files?.length) {
+          processAnnualExcelFile(e.dataTransfer.files[0]);
+        }
+      });
+    }
 
     // Modal 10: Delete Annual Trigger
     document.getElementById('btn-confirm-delete-annual')?.addEventListener('click', handleConfirmDeleteAnnual);

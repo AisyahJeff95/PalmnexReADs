@@ -718,27 +718,82 @@
   // =========================================================================
   // 7. READ BACKUP / EXCEL (READ_BACKUP)
   // =========================================================================
+  let uploadedYieldBackupFile = null;
+
   function openBackupModal() {
+    uploadedYieldBackupFile = null;
     const modal = modals.backup;
-    document.getElementById('yield-backup-preview-box').style.display = 'none';
+    const box = document.getElementById('yield-backup-preview-box');
+    const fileInp = document.getElementById('yield-backup-file-upload');
+    const dropTitle = document.getElementById('yield-backup-drop-title');
+    if (box) box.style.display = 'none';
+    if (fileInp) fileInp.value = '';
+    if (dropTitle) dropTitle.textContent = 'Click to Browse or Drag & Drop Excel File Here';
     openModal(modal);
   }
 
-  document.getElementById('btn-check-yield-backup')?.addEventListener('click', () => {
+  async function handleYieldBackupFileSelect(file) {
+    if (!file) return;
+    uploadedYieldBackupFile = file;
+    const dropTitle = document.getElementById('yield-backup-drop-title');
+    if (dropTitle) dropTitle.textContent = `Selected: ${file.name}`;
+
     const box = document.getElementById('yield-backup-preview-box');
     const txt = document.getElementById('yield-backup-preview-text');
     const t = getCurrentTrial();
-    box.style.display = 'block';
-    txt.innerHTML = `
-      <strong>Backup File Verified:</strong> ${document.getElementById('yield-backup-filename').value}<br>
-      Found archived harvesting records matching Trial Code: <strong>${t.code} (${t.estate})</strong>.<br>
-      Ready to restore harvesting rounds.
-    `;
+
+    let rowCountText = '';
+    try {
+      if (window.XLSX) {
+        const buffer = await file.arrayBuffer();
+        const workbook = window.XLSX.read(buffer, { type: 'array' });
+        const sheetName = workbook.SheetNames[0];
+        const rows = window.XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+        rowCountText = ` (${rows.length} rows in sheet "${sheetName}")`;
+      }
+    } catch (err) {
+      console.error(err);
+    }
+
+    if (box && txt) {
+      box.style.display = 'block';
+      txt.innerHTML = `
+        <strong>Excel Backup File Ready:</strong> ${file.name}${rowCountText}<br>
+        Target Trial Code: <strong>${t.code} (${t.estate})</strong>.<br>
+        Ready to restore harvesting rounds.
+      `;
+    }
+  }
+
+  document.getElementById('yield-backup-file-upload')?.addEventListener('change', (e) => {
+    handleYieldBackupFileSelect(e.target.files[0]);
   });
 
+  const yieldBackupDropZone = document.getElementById('yield-backup-drop-zone');
+  if (yieldBackupDropZone) {
+    yieldBackupDropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      yieldBackupDropZone.classList.add('dragover');
+    });
+    yieldBackupDropZone.addEventListener('dragleave', () => {
+      yieldBackupDropZone.classList.remove('dragover');
+    });
+    yieldBackupDropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      yieldBackupDropZone.classList.remove('dragover');
+      if (e.dataTransfer?.files?.length) {
+        handleYieldBackupFileSelect(e.dataTransfer.files[0]);
+      }
+    });
+  }
+
   document.getElementById('btn-start-replace-yield-backup')?.addEventListener('click', () => {
+    if (!uploadedYieldBackupFile) {
+      showToast('Please select or drop an Excel file (.xlsx, .xls, .csv) first');
+      return;
+    }
     const t = getCurrentTrial();
-    showToast(`Yield data for ${t.code} restored from backup file successfully`);
+    showToast(`Yield data for ${t.code} restored from "${uploadedYieldBackupFile.name}" successfully`);
     closeModal(modals.backup);
     refreshHeader();
   });
@@ -760,21 +815,23 @@
   function openNonReadaModal() {
     const t = getCurrentTrial();
     const modal = modals.nonReada;
+    const dropTitle = document.getElementById('yield-nonreada-drop-title');
+    const fileInp = document.getElementById('yield-excel-file-upload');
 
     document.getElementById('yield-nonreada-code').textContent = t.code;
     document.getElementById('yield-nonreada-estate').textContent = t.estate;
+    if (fileInp) fileInp.value = '';
+    if (dropTitle) dropTitle.textContent = 'Click to Browse or Drag & Drop Excel File Here';
 
     const ext = window.READA_EXTERNAL_YIELD_CSV || { fields: [], sampleRows: [] };
     renderYieldPreview(ext);
     openModal(modal);
   }
 
-  // Handle Excel file upload using SheetJS
-  document.getElementById('yield-excel-file-upload')?.addEventListener('change', async (e) => {
-    const file = e.target.files[0];
+  async function handleYieldNonReadaFileSelect(file) {
     if (!file) return;
-    const nameInp = document.getElementById('yield-nonreada-filename');
-    if (nameInp) nameInp.value = file.name;
+    const dropTitle = document.getElementById('yield-nonreada-drop-title');
+    if (dropTitle) dropTitle.textContent = `Selected: ${file.name}`;
 
     try {
       if (window.XLSX) {
@@ -799,7 +856,30 @@
       console.error(err);
       showToast(`Error parsing Excel file: ${err.message}`);
     }
+  }
+
+  // Handle Excel file upload using SheetJS
+  document.getElementById('yield-excel-file-upload')?.addEventListener('change', (e) => {
+    handleYieldNonReadaFileSelect(e.target.files[0]);
   });
+
+  const yieldNonReadaDropZone = document.getElementById('yield-nonreada-drop-zone');
+  if (yieldNonReadaDropZone) {
+    yieldNonReadaDropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      yieldNonReadaDropZone.classList.add('dragover');
+    });
+    yieldNonReadaDropZone.addEventListener('dragleave', () => {
+      yieldNonReadaDropZone.classList.remove('dragover');
+    });
+    yieldNonReadaDropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      yieldNonReadaDropZone.classList.remove('dragover');
+      if (e.dataTransfer?.files?.length) {
+        handleYieldNonReadaFileSelect(e.dataTransfer.files[0]);
+      }
+    });
+  }
 
   document.getElementById('btn-start-import-yield-file')?.addEventListener('click', () => {
     const t = getCurrentTrial();

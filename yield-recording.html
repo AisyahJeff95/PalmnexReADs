@@ -753,12 +753,16 @@
 
     <div class="modal-body-scroll">
       <div class="form-field">
-        <label for="yield-backup-filename">BackUp File Name (Drive / Path / File):</label>
-        <div style="display: flex; gap: 8px;">
-          <input type="text" id="yield-backup-filename" class="form-control" value="C:\READA\BCRYLD.DBF" style="flex: 1; font-family: var(--font-mono);">
-          <button type="button" class="btn" id="btn-check-yield-backup" style="white-space: nowrap;">
-            Check Availability
-          </button>
+        <label>Upload Excel Backup File (.xlsx / .xls / .csv):</label>
+        <div id="yield-backup-drop-zone" class="upload-drop-zone" onclick="document.getElementById('yield-backup-file-upload').click()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width: 38px; height: 38px; color: var(--brand-green); margin: 0 auto 8px; display: block;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <div id="yield-backup-drop-title" style="font-weight: 700; color: var(--text); font-size: 0.88rem; margin-bottom: 4px;">
+            Click to Browse or Drag &amp; Drop Excel File Here
+          </div>
+          <div style="font-size: 0.75rem; color: var(--text-muted);">
+            Supports Excel Spreadsheets (.xlsx, .xls) or CSV (.csv)
+          </div>
+          <input type="file" id="yield-backup-file-upload" accept=".xlsx,.xls,.csv" style="display: none;">
         </div>
       </div>
 
@@ -794,9 +798,17 @@
     <div class="modal-body-scroll">
       <div class="form-row">
         <div class="form-field" style="grid-column: span 2;">
-          <label for="yield-excel-file-upload">Choose Excel File (.xlsx / .xls) to Read:</label>
-          <input type="file" id="yield-excel-file-upload" accept=".xlsx,.xls,.csv" class="form-control" style="font-size: 0.8rem; padding: 6px;">
-          <input type="text" id="yield-nonreada-filename" class="form-control" value="B:\YLD97.XLSX" style="font-family: var(--font-mono); font-weight: 600; color: var(--brand-green); margin-top: 6px;" readonly>
+          <label>Upload Excel File (.xlsx / .xls / .csv) to Read:</label>
+          <div id="yield-nonreada-drop-zone" class="upload-drop-zone" onclick="document.getElementById('yield-excel-file-upload').click()" style="padding: 16px 12px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width: 30px; height: 30px; color: var(--brand-green); margin: 0 auto 6px; display: block;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <div id="yield-nonreada-drop-title" style="font-weight: 700; color: var(--text); font-size: 0.84rem; margin-bottom: 2px;">
+              Click to Browse or Drag &amp; Drop Excel File Here
+            </div>
+            <div style="font-size: 0.72rem; color: var(--text-muted);">
+              Supports .xlsx, .xls, or .csv
+            </div>
+            <input type="file" id="yield-excel-file-upload" accept=".xlsx,.xls,.csv" style="display: none;">
+          </div>
         </div>
         <div class="form-field">
           <label>Target Trial Code</label>

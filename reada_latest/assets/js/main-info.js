@@ -607,47 +607,95 @@
   // =========================================================================
   // FIGURES 6, 9, 13: Read Backup / Excel File Pop-ups
   // =========================================================================
+  let uploadedBackupFile = null;
+
   function openBackupModal(type) {
     currentBackupType = type;
-    const t = getCurrentTrial();
+    uploadedBackupFile = null;
     const modal = modals.backup;
     const title = document.getElementById('backup-modal-title');
-    const fileInp = document.getElementById('backup-filename');
+    const dropTitle = document.getElementById('backup-drop-title');
+    const fileInp = document.getElementById('backup-file-upload');
     const previewBox = document.getElementById('backup-preview-box');
 
-    previewBox.style.display = 'none';
+    if (previewBox) previewBox.style.display = 'none';
+    if (fileInp) fileInp.value = '';
+    if (dropTitle) dropTitle.textContent = 'Click to Browse or Drag & Drop Excel File Here';
 
     if (type === 'info') {
       title.textContent = 'Read Trial Main Information From Backup / Excel File';
-      fileInp.value = 'C:\\READA\\BCINFO.CSV';
     } else if (type === 'treatment') {
       title.textContent = 'Read Plot Treatment Data From Backup / Excel File';
-      fileInp.value = 'C:\\READA\\BCTREAT.CSV';
     } else {
       title.textContent = 'Read Palm Numbering From Backup / Excel File';
-      fileInp.value = 'C:\\READA\\BCPALM.CSV';
     }
 
     openModal(modal);
   }
 
-  // Check Trial Code Availability
-  document.getElementById('btn-check-backup')?.addEventListener('click', () => {
+  async function handleBackupFileSelect(file) {
+    if (!file) return;
+    uploadedBackupFile = file;
+    const dropTitle = document.getElementById('backup-drop-title');
+    if (dropTitle) dropTitle.textContent = `Selected: ${file.name}`;
+
     const box = document.getElementById('backup-preview-box');
     const txt = document.getElementById('backup-preview-text');
     const t = getCurrentTrial();
-    box.style.display = 'block';
-    txt.innerHTML = `
-      <strong>Backup File Verified:</strong> ${document.getElementById('backup-filename').value}<br>
-      Found archived snapshot matching Trial Code: <strong>${t.code} (${t.estate})</strong>.<br>
-      Ready to restore and replace current active records.
-    `;
+
+    let rowCountText = '';
+    try {
+      if (window.XLSX) {
+        const buffer = await file.arrayBuffer();
+        const workbook = window.XLSX.read(buffer, { type: 'array' });
+        const sheetName = workbook.SheetNames[0];
+        const rows = window.XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+        rowCountText = ` (${rows.length} rows in sheet "${sheetName}")`;
+      }
+    } catch (err) {
+      console.error(err);
+    }
+
+    if (box && txt) {
+      box.style.display = 'block';
+      txt.innerHTML = `
+        <strong>Excel Backup File Ready:</strong> ${file.name}${rowCountText}<br>
+        Target Trial Code: <strong>${t.code} (${t.estate})</strong>.<br>
+        Ready to restore and replace current active records.
+      `;
+    }
+  }
+
+  document.getElementById('backup-file-upload')?.addEventListener('change', (e) => {
+    handleBackupFileSelect(e.target.files[0]);
   });
+
+  const backupDropZone = document.getElementById('backup-drop-zone');
+  if (backupDropZone) {
+    backupDropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      backupDropZone.classList.add('dragover');
+    });
+    backupDropZone.addEventListener('dragleave', () => {
+      backupDropZone.classList.remove('dragover');
+    });
+    backupDropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      backupDropZone.classList.remove('dragover');
+      if (e.dataTransfer?.files?.length) {
+        handleBackupFileSelect(e.dataTransfer.files[0]);
+      }
+    });
+  }
 
   // Start Replacing Data From Backup File
   document.getElementById('btn-start-replace-backup')?.addEventListener('click', () => {
+    if (!uploadedBackupFile) {
+      showToast('Please select or drop an Excel file (.xlsx, .xls, .csv) first');
+      return;
+    }
     const t = getCurrentTrial();
-    showToast(`Data for ${t.code} restored from backup file successfully`);
+    showToast(`Data for ${t.code} restored from "${uploadedBackupFile.name}" successfully`);
     closeModal(modals.backup);
     refreshHeader();
   });
@@ -670,17 +718,18 @@
     const modal = modals.nonReada;
     const t = getCurrentTrial();
     const title = document.getElementById('non-reada-modal-title');
-    const fileInp = document.getElementById('non-reada-filename');
+    const dropTitle = document.getElementById('non-reada-drop-title');
+    const fileInp = document.getElementById('non-reada-file-upload');
 
     document.getElementById('non-reada-code').textContent = t.code;
     document.getElementById('non-reada-estate').textContent = t.estate;
+    if (fileInp) fileInp.value = '';
+    if (dropTitle) dropTitle.textContent = 'Click to Browse or Drag & Drop Excel File Here';
 
     if (type === 'treatment') {
       title.textContent = "Import Trial Plot Treatment from Excel Spreadsheet";
-      fileInp.value = 'B:\\DTPL1195.XLSX';
     } else {
       title.textContent = "Import Palm Numbering from Excel Spreadsheet";
-      fileInp.value = 'B:\\DTPY97.XLSX';
     }
 
     const ext = window.READA_EXTERNAL_DBF || { fields: [], sampleRows: [] };
@@ -688,12 +737,10 @@
     openModal(modal);
   }
 
-  // Handle Excel File Upload Input using SheetJS
-  document.getElementById('non-reada-file-upload')?.addEventListener('change', async (e) => {
-    const file = e.target.files[0];
+  async function handleNonReadaFileSelect(file) {
     if (!file) return;
-    const nameInp = document.getElementById('non-reada-filename');
-    if (nameInp) nameInp.value = file.name;
+    const dropTitle = document.getElementById('non-reada-drop-title');
+    if (dropTitle) dropTitle.textContent = `Selected: ${file.name}`;
 
     try {
       if (window.XLSX) {
@@ -718,7 +765,30 @@
       console.error(err);
       showToast(`Error parsing Excel file: ${err.message}`);
     }
+  }
+
+  // Handle Excel File Upload Input using SheetJS
+  document.getElementById('non-reada-file-upload')?.addEventListener('change', (e) => {
+    handleNonReadaFileSelect(e.target.files[0]);
   });
+
+  const nonReadaDropZone = document.getElementById('non-reada-drop-zone');
+  if (nonReadaDropZone) {
+    nonReadaDropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      nonReadaDropZone.classList.add('dragover');
+    });
+    nonReadaDropZone.addEventListener('dragleave', () => {
+      nonReadaDropZone.classList.remove('dragover');
+    });
+    nonReadaDropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      nonReadaDropZone.classList.remove('dragover');
+      if (e.dataTransfer?.files?.length) {
+        handleNonReadaFileSelect(e.dataTransfer.files[0]);
+      }
+    });
+  }
 
   // Start Reading File & Map
   document.getElementById('btn-start-reading-file')?.addEventListener('click', () => {
