@@ -608,15 +608,102 @@
   // FIGURES 6, 9, 13: Read Backup / Excel File Pop-ups
   // =========================================================================
   let uploadedBackupFile = null;
+  let uploadedBackupRows = [];
+  let currentNonReadaType = 'treatment';
+
+  function downloadSampleExcelForMainInfo(type) {
+    const t = getCurrentTrial();
+    let sampleRows = [];
+    let sheetName = 'Sample';
+    let fileName = 'Sample_Template.xlsx';
+
+    if (type === 'info') {
+      sheetName = 'Trial_Info';
+      fileName = `Sample_Trial_Info_${t.code}.xlsx`;
+      sampleRows = [{
+        TRIAL_CODE: t.code,
+        ESTATE: t.estate || 'Teluk Intan',
+        PLANTING_YEAR: t.plantingYear || 1988,
+        DENSITY_TYPE: t.densityType || 'Constant',
+        CONSTANT_DENSITY: t.constantDensity || 148,
+        FACTOR_DEFINITIONS: (t.factorInfo || 'Factor 1: Density; Factor 2: N Fertilizer')
+      }];
+    } else if (type === 'treatment') {
+      sheetName = 'Plot_Treatments';
+      fileName = `Sample_Plot_Treatment_${t.code}.xlsx`;
+      const existing = (t.plotTreatments || []).slice(0, 5);
+      if (existing.length > 0) {
+        sampleRows = existing.map((tr, idx) => {
+          const lvls = tr.levels || [];
+          return {
+            REC_NO: tr.rec || (idx + 1),
+            PLOT_NO: tr.plot,
+            SUB_PLOT: tr.subPlot || '',
+            FACTOR1: lvls[0] ?? 1,
+            FACTOR2: lvls[1] ?? 1,
+            FACTOR3: lvls[2] ?? 0,
+            FACTOR4: lvls[3] ?? 0,
+            FACTOR5: lvls[4] ?? 0,
+            FACTOR6: lvls[5] ?? 0,
+            DENSITY: tr.density || 148
+          };
+        });
+      } else {
+        sampleRows = [
+          { REC_NO: 1, PLOT_NO: 1, SUB_PLOT: 'A', FACTOR1: 1, FACTOR2: 1, FACTOR3: 0, FACTOR4: 0, FACTOR5: 0, FACTOR6: 0, DENSITY: 148 },
+          { REC_NO: 2, PLOT_NO: 2, SUB_PLOT: 'B', FACTOR1: 1, FACTOR2: 2, FACTOR3: 1, FACTOR4: 0, FACTOR5: 0, FACTOR6: 0, DENSITY: 148 }
+        ];
+      }
+    } else {
+      sheetName = 'Palm_Numbering';
+      fileName = `Sample_Palm_Numbering_${t.code}.xlsx`;
+      const existing = (t.palms || []).slice(0, 5);
+      if (existing.length > 0) {
+        sampleRows = existing.map((p, idx) => ({
+          REC_NO: p.rec || (idx + 1),
+          PLOT_NO: p.plot,
+          SUB_PLOT: p.subPlot || '',
+          PALM_NO: p.palmNo,
+          PROGENY: p.progeny || 'D x P AVROS',
+          STATUS: p.status || 'Normal'
+        }));
+      } else {
+        sampleRows = [
+          { REC_NO: 1, PLOT_NO: 1, SUB_PLOT: '', PALM_NO: '1', PROGENY: 'D x P AVROS', STATUS: 'Normal' },
+          { REC_NO: 2, PLOT_NO: 1, SUB_PLOT: '', PALM_NO: '2', PROGENY: 'D x P AVROS', STATUS: 'Normal' }
+        ];
+      }
+    }
+
+    if (window.XLSX) {
+      const ws = window.XLSX.utils.json_to_sheet(sampleRows);
+      const wb = window.XLSX.utils.book_new();
+      window.XLSX.utils.book_append_sheet(wb, ws, sheetName);
+      window.XLSX.writeFile(wb, fileName);
+      showToast(`Downloaded sample template "${fileName}"`);
+    } else {
+      exportMainInfoCSVDirect(type);
+    }
+  }
+
+  document.getElementById('btn-download-backup-sample')?.addEventListener('click', () => {
+    downloadSampleExcelForMainInfo(currentBackupType);
+  });
+
+  document.getElementById('btn-download-nonreada-sample')?.addEventListener('click', () => {
+    downloadSampleExcelForMainInfo(currentNonReadaType);
+  });
 
   function openBackupModal(type) {
     currentBackupType = type;
     uploadedBackupFile = null;
+    uploadedBackupRows = [];
     const modal = modals.backup;
     const title = document.getElementById('backup-modal-title');
     const dropTitle = document.getElementById('backup-drop-title');
     const fileInp = document.getElementById('backup-file-upload');
     const previewBox = document.getElementById('backup-preview-box');
+    const expectedCols = document.getElementById('backup-expected-cols');
 
     if (previewBox) previewBox.style.display = 'none';
     if (fileInp) fileInp.value = '';
@@ -624,10 +711,13 @@
 
     if (type === 'info') {
       title.textContent = 'Read Trial Main Information From Backup / Excel File';
+      if (expectedCols) expectedCols.textContent = 'Expected Columns: TRIAL_CODE, ESTATE, PLANTING_YEAR, DENSITY_TYPE, CONSTANT_DENSITY, FACTOR_DEFINITIONS';
     } else if (type === 'treatment') {
       title.textContent = 'Read Plot Treatment Data From Backup / Excel File';
+      if (expectedCols) expectedCols.textContent = 'Expected Columns: PLOT_NO (or PLOT), SUB_PLOT, FACTOR1..FACTOR6 (or REP, D, N, P, K), DENSITY';
     } else {
       title.textContent = 'Read Palm Numbering From Backup / Excel File';
+      if (expectedCols) expectedCols.textContent = 'Expected Columns: PLOT_NO (or PLOT), SUB_PLOT, PALM_NO, PROGENY, STATUS';
     }
 
     openModal(modal);
@@ -636,6 +726,7 @@
   async function handleBackupFileSelect(file) {
     if (!file) return;
     uploadedBackupFile = file;
+    uploadedBackupRows = [];
     const dropTitle = document.getElementById('backup-drop-title');
     if (dropTitle) dropTitle.textContent = `Selected: ${file.name}`;
 
@@ -644,13 +735,18 @@
     const t = getCurrentTrial();
 
     let rowCountText = '';
+    let colsText = '';
     try {
       if (window.XLSX) {
         const buffer = await file.arrayBuffer();
         const workbook = window.XLSX.read(buffer, { type: 'array' });
         const sheetName = workbook.SheetNames[0];
         const rows = window.XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
-        rowCountText = ` (${rows.length} rows in sheet "${sheetName}")`;
+        uploadedBackupRows = rows || [];
+        rowCountText = ` (${uploadedBackupRows.length} rows in sheet "${sheetName}")`;
+        if (uploadedBackupRows.length > 0) {
+          colsText = `<br>Detected Columns: <code>${Object.keys(uploadedBackupRows[0]).join(', ')}</code>`;
+        }
       }
     } catch (err) {
       console.error(err);
@@ -659,7 +755,7 @@
     if (box && txt) {
       box.style.display = 'block';
       txt.innerHTML = `
-        <strong>Excel Backup File Ready:</strong> ${file.name}${rowCountText}<br>
+        <strong>Excel Backup File Ready:</strong> ${file.name}${rowCountText}${colsText}<br>
         Target Trial Code: <strong>${t.code} (${t.estate})</strong>.<br>
         Ready to restore and replace current active records.
       `;
@@ -688,6 +784,54 @@
     });
   }
 
+  function applyImportedMainInfoRows(t, type, rows) {
+    if (!rows || rows.length === 0) return 0;
+    if (type === 'info') {
+      const r = rows[0];
+      if (r.ESTATE || r.estate) t.estate = String(r.ESTATE || r.estate);
+      if (r.PLANTING_YEAR || r.planting_year) t.plantingYear = Number(r.PLANTING_YEAR || r.planting_year);
+      if (r.DENSITY_TYPE || r.density_type) t.densityType = String(r.DENSITY_TYPE || r.density_type);
+      if (r.CONSTANT_DENSITY || r.constant_density) t.constantDensity = Number(r.CONSTANT_DENSITY || r.constant_density);
+      if (r.FACTOR_DEFINITIONS || r.factor_definitions) t.factorInfo = String(r.FACTOR_DEFINITIONS || r.factor_definitions);
+      if (window.ReadaSync && typeof window.ReadaSync.upsertTrial === 'function') {
+        window.ReadaSync.upsertTrial(t);
+      }
+      return 1;
+    } else if (type === 'treatment') {
+      t.plotTreatments = rows.map((r, i) => ({
+        rec: Number(r.REC_NO || r.rec || (i + 1)),
+        plot: Number(r.PLOT_NO || r.PLOT || r.PLOT_ID || r.plot || (i + 1)),
+        subPlot: String(r.SUB_PLOT || r.SUBPLOT || r.BLOCK || r.subPlot || ''),
+        levels: [
+          Number(r.FACTOR1 ?? r.REP ?? r.REP_CODE ?? 1),
+          Number(r.FACTOR2 ?? r.D ?? r.DENS_LVL ?? 1),
+          Number(r.FACTOR3 ?? r.N ?? r.N_LVL ?? 0),
+          Number(r.FACTOR4 ?? r.P ?? r.P_LVL ?? 0),
+          Number(r.FACTOR5 ?? r.K ?? r.K_LVL ?? 0),
+          Number(r.FACTOR6 ?? r.L ?? r.L_LVL ?? 0)
+        ],
+        density: Number(r.DENSITY || r.SPACING || r.density || t.constantDensity || 148)
+      }));
+      if (window.ReadaSync && typeof window.ReadaSync.saveTreatments === 'function') {
+        window.ReadaSync.saveTreatments(t.code, t.plotTreatments);
+      }
+      return t.plotTreatments.length;
+    } else {
+      t.palms = rows.map((r, i) => ({
+        rec: Number(r.REC_NO || r.rec || (i + 1)),
+        plot: Number(r.PLOT_NO || r.PLOT || r.plot || 1),
+        subPlot: String(r.SUB_PLOT || r.SUBPLOT || r.subPlot || ''),
+        palmNo: String(r.PALM_NO || r.PALM || r.palmNo || (i + 1)),
+        progeny: String(r.PROGENY || r.progeny || 'D x P AVROS'),
+        status: String(r.STATUS || r.status || 'Normal')
+      }));
+      if (window.ReadaSync && typeof window.ReadaSync.savePalms === 'function') {
+        window.ReadaSync.savePalms(t.code, t.palms);
+      }
+      return t.palms.length;
+    }
+  }
+
   // Start Replacing Data From Backup File
   document.getElementById('btn-start-replace-backup')?.addEventListener('click', () => {
     if (!uploadedBackupFile) {
@@ -695,7 +839,8 @@
       return;
     }
     const t = getCurrentTrial();
-    showToast(`Data for ${t.code} restored from "${uploadedBackupFile.name}" successfully`);
+    const count = applyImportedMainInfoRows(t, currentBackupType, uploadedBackupRows);
+    showToast(`Restored ${count || uploadedBackupRows.length} record(s) for ${t.code} from "${uploadedBackupFile.name}"`);
     closeModal(modals.backup);
     refreshHeader();
   });
@@ -715,6 +860,7 @@
   }
 
   function openNonReadaModal(type) {
+    currentNonReadaType = type;
     const modal = modals.nonReada;
     const t = getCurrentTrial();
     const title = document.getElementById('non-reada-modal-title');
@@ -795,21 +941,8 @@
     const t = getCurrentTrial();
     const ext = window.READA_EXTERNAL_DBF;
     if (ext && ext.sampleRows && ext.sampleRows.length > 0) {
-      t.plotTreatments = ext.sampleRows.map((r, i) => ({
-        rec: i + 1,
-        plot: r.PLOT || r.PLOT_ID || r.PLOT_NO || (i + 1),
-        subPlot: r.SUBPLOT || r.BLOCK || r.SUB_PLOT || '',
-        levels: [
-          r.REP || r.REP_CODE || r.FACTOR1 || 1,
-          r.D || r.DENS_LVL || r.FACTOR2 || 1,
-          r.N || r.N_LVL || r.FACTOR3 || 0,
-          r.P || r.P_LVL || r.FACTOR4 || 0,
-          r.K || r.K_LVL || r.FACTOR5 || 0,
-          r.L || r.L_LVL || r.FACTOR6 || 0
-        ],
-        density: r.DENSITY || r.SPACING || 148
-      }));
-      showToast(`Mapped ${ext.sampleRows.length} external records into ${t.code}`);
+      const count = applyImportedMainInfoRows(t, currentNonReadaType, ext.sampleRows);
+      showToast(`Mapped ${count} external records into ${t.code}`);
     }
     refreshHeader();
     closeModal(modals.nonReada);

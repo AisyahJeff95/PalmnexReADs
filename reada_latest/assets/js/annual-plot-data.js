@@ -2311,9 +2311,31 @@
 
   // ================= Modal 8: Read Data From BackUp File =================
   let uploadedAnnualBackupFile = null;
+  let uploadedAnnualBackupRows = [];
+
+  function downloadSampleExcelForAnnual() {
+    const trial = getCurrentTrial() || { code: 'DTP1' };
+    const fileName = `Sample_Annual_Plot_Data_${trial.code}.xlsx`;
+    const sampleRows = [
+      { PLOT: 1, FFB_THA: 31.4, N_PCT: 2.75, P_PCT: 0.165, K_PCT: 1.18, LAI: 5.45, PH_H2O: 4.35, CEC: 8.6 },
+      { PLOT: 2, FFB_THA: 33.8, N_PCT: 2.82, P_PCT: 0.171, K_PCT: 1.24, LAI: 5.62, PH_H2O: 4.42, CEC: 8.9 },
+      { PLOT: 3, FFB_THA: 29.6, N_PCT: 2.68, P_PCT: 0.159, K_PCT: 1.12, LAI: 5.18, PH_H2O: 4.28, CEC: 8.2 }
+    ];
+
+    if (window.XLSX) {
+      const ws = window.XLSX.utils.json_to_sheet(sampleRows);
+      const wb = window.XLSX.utils.book_new();
+      window.XLSX.utils.book_append_sheet(wb, ws, 'Annual_Plot_Data');
+      window.XLSX.writeFile(wb, fileName);
+      showToast(`Downloaded sample template "${fileName}"`);
+    } else {
+      handleConfirmMakeBackup();
+    }
+  }
 
   function openReadBackupDialog() {
     uploadedAnnualBackupFile = null;
+    uploadedAnnualBackupRows = [];
     const fileInp = document.getElementById('backup-excel-file-upload');
     const dropTitle = document.getElementById('annual-backup-drop-title');
     const statusText = document.getElementById('annual-backup-status-text');
@@ -2321,6 +2343,60 @@
     if (dropTitle) dropTitle.textContent = 'Click to Browse or Drag & Drop Excel File Here';
     if (statusText) statusText.textContent = 'Waiting for Excel file upload';
     openModal(modals.readBackup);
+  }
+
+  function applyAnnualRowsToTrial(trial, rawRows) {
+    if (!trial || !rawRows || rawRows.length === 0) return 0;
+    ensureTrialAnnualData(trial);
+    rawRows.forEach((r, idx) => {
+      const p = Number(r.PLOT || r.plot || r.Plot || r.PLOT_NO || (idx + 1)) || (idx + 1);
+      const ffbVal = Number(r.FFB_THA ?? r.ffb_tha ?? r.YIELD ?? r.FFB ?? 30.0);
+      const nVal = Number(r.N_PCT ?? r.n_pct ?? r.N ?? 2.70);
+      const pVal = Number(r.P_PCT ?? r.p_pct ?? r.P ?? 0.160);
+      const kVal = Number(r.K_PCT ?? r.k_pct ?? r.K ?? 1.15);
+      const laiVal = Number(r.LAI ?? r.lai ?? 5.20);
+      const phVal = Number(r.PH_H2O ?? r.ph_h2o ?? r.PH ?? 4.30);
+      const cecVal = Number(r.CEC ?? r.cec ?? 8.5);
+
+      let ffbRow = trial.annualPlotData.ffb.find(x => x.plot === p);
+      if (!ffbRow) {
+        ffbRow = { rec: idx + 1, plot: p, palms: 16, bwt: 18.0, nob: 15.0 };
+        trial.annualPlotData.ffb.push(ffbRow);
+      }
+      ffbRow.ffbYield = Number(ffbVal.toFixed(1));
+      const density = getTrialDensity(trial, p);
+      ffbRow.palmYield = Number(((ffbRow.ffbYield * 1000) / density).toFixed(1));
+      ffbRow.bwt = Number((ffbRow.palmYield / 15.0).toFixed(1));
+      ffbRow.nob = 15.0;
+      ffbRow.bwtTotal = Math.round(ffbRow.palmYield * ffbRow.palms);
+      ffbRow.bnoTotal = Math.round(ffbRow.nob * ffbRow.palms);
+
+      let leafRow = trial.annualPlotData.leaf.find(x => x.plot === p);
+      if (!leafRow) {
+        leafRow = { rec: idx + 1, plot: p, sampleType: 'Frond 17' };
+        trial.annualPlotData.leaf.push(leafRow);
+      }
+      leafRow.n = Number(nVal.toFixed(2));
+      leafRow.p = Number(pVal.toFixed(3));
+      leafRow.k = Number(kVal.toFixed(2));
+
+      let vegRow = trial.annualPlotData.veg.find(x => x.plot === p);
+      if (!vegRow) {
+        vegRow = { rec: idx + 1, plot: p, frond: 17, pinnae: 310 };
+        trial.annualPlotData.veg.push(vegRow);
+      }
+      vegRow.lai = Number(laiVal.toFixed(2));
+
+      let soilRow = trial.annualPlotData.soil.find(x => x.plot === p);
+      if (!soilRow) {
+        soilRow = { rec: idx + 1, plot: p, depth: '0-15 cm' };
+        trial.annualPlotData.soil.push(soilRow);
+      }
+      soilRow.ph = Number(phVal.toFixed(2));
+      soilRow.cec = Number(cecVal.toFixed(1));
+    });
+    saveTrialAnnualData(trial);
+    return rawRows.length;
   }
 
   function handleConfirmReadBackup() {
@@ -2331,14 +2407,17 @@
     const trial = getCurrentTrial();
     if (!trial) return;
 
-    // Reset trial annualPlotData to clean factory state
-    localStorage.removeItem('reada_annual_plot_data_' + trial.code);
-    delete trial.annualPlotData;
-    ensureTrialAnnualData(trial);
+    if (uploadedAnnualBackupRows.length > 0) {
+      applyAnnualRowsToTrial(trial, uploadedAnnualBackupRows);
+    } else {
+      localStorage.removeItem('reada_annual_plot_data_' + trial.code);
+      delete trial.annualPlotData;
+      ensureTrialAnnualData(trial);
+    }
 
     renderAll();
     closeModal(modals.readBackup);
-    showToast(`Restored annual plot records for ${trial.code} from "${uploadedAnnualBackupFile.name}".`);
+    showToast(`Restored ${uploadedAnnualBackupRows.length} annual plot record(s) for ${trial.code} from "${uploadedAnnualBackupFile.name}".`);
   }
 
   // ================= Modal 9: Read 'Non-ReaDA' DBase File =================
@@ -2380,52 +2459,7 @@
     const extData = window.READA_EXTERNAL_ANNUAL_DBF;
     if (!trial || !extData || !extData.sampleRows) return;
 
-    // Map rows into trial's 4 tables
-    extData.sampleRows.forEach((r, idx) => {
-      const p = r.PLOT;
-      // FFB
-      let ffbRow = trial.annualPlotData.ffb.find(x => x.plot === p);
-      if (!ffbRow) {
-        ffbRow = { rec: idx + 1, plot: p, palms: 16, bwt: 18.0, nob: 15.0 };
-        trial.annualPlotData.ffb.push(ffbRow);
-      }
-      ffbRow.ffbYield = r.FFB_THA;
-      const density = getTrialDensity(trial, p);
-      ffbRow.palmYield = Number(((r.FFB_THA * 1000) / density).toFixed(1));
-      ffbRow.bwt = Number((ffbRow.palmYield / 15.0).toFixed(1));
-      ffbRow.nob = 15.0;
-      ffbRow.bwtTotal = Math.round(ffbRow.palmYield * ffbRow.palms);
-      ffbRow.bnoTotal = Math.round(ffbRow.nob * ffbRow.palms);
-
-      // Leaf
-      let leafRow = trial.annualPlotData.leaf.find(x => x.plot === p);
-      if (!leafRow) {
-        leafRow = { rec: idx + 1, plot: p, sampleType: 'Frond 17' };
-        trial.annualPlotData.leaf.push(leafRow);
-      }
-      leafRow.n = r.N_PCT;
-      leafRow.p = r.P_PCT;
-      leafRow.k = r.K_PCT;
-
-      // Veg
-      let vegRow = trial.annualPlotData.veg.find(x => x.plot === p);
-      if (!vegRow) {
-        vegRow = { rec: idx + 1, plot: p, frond: 17, pinnae: 310 };
-        trial.annualPlotData.veg.push(vegRow);
-      }
-      vegRow.lai = r.LAI;
-
-      // Soil
-      let soilRow = trial.annualPlotData.soil.find(x => x.plot === p);
-      if (!soilRow) {
-        soilRow = { rec: idx + 1, plot: p, depth: '0-15 cm' };
-        trial.annualPlotData.soil.push(soilRow);
-      }
-      soilRow.ph = r.PH_H2O;
-      soilRow.cec = r.CEC;
-    });
-
-    saveTrialAnnualData(trial);
+    applyAnnualRowsToTrial(trial, extData.sampleRows);
     renderAll();
     closeModal(modals.readNonReada);
     showToast(`Successfully imported ${extData.sampleRows.length} plot records from ${extData.fileName} into Trial ${trial.code}!`);
@@ -2435,6 +2469,7 @@
   function processBackupExcelFile(file) {
     if (!file) return;
     uploadedAnnualBackupFile = file;
+    uploadedAnnualBackupRows = [];
 
     const dropTitle = document.getElementById('annual-backup-drop-title');
     const statusText = document.getElementById('annual-backup-status-text');
@@ -2449,11 +2484,12 @@
           const sheetName = workbook.SheetNames[0];
           const worksheet = workbook.Sheets[sheetName];
           const rows = window.XLSX.utils.sheet_to_json(worksheet);
+          uploadedAnnualBackupRows = rows || [];
           if (statusText) {
-            statusText.textContent = `Verified: ${file.name} (${rows.length} rows in "${sheetName}")`;
+            statusText.textContent = `Verified: ${file.name} (${uploadedAnnualBackupRows.length} rows in "${sheetName}")`;
           }
-          if (rows && rows.length > 0) {
-            showToast(`Archive verified: ${rows.length} rows loaded from Excel sheet "${sheetName}".`);
+          if (uploadedAnnualBackupRows.length > 0) {
+            showToast(`Archive verified: ${uploadedAnnualBackupRows.length} rows loaded from Excel sheet "${sheetName}".`);
           }
         };
         reader.readAsArrayBuffer(file);
@@ -2763,6 +2799,7 @@
     document.getElementById('btn-confirm-make-backup')?.addEventListener('click', handleConfirmMakeBackup);
 
     // Modal 8: Read Backup Triggers
+    document.getElementById('btn-download-annual-backup-sample')?.addEventListener('click', downloadSampleExcelForAnnual);
     document.getElementById('btn-confirm-read-backup')?.addEventListener('click', handleConfirmReadBackup);
     document.getElementById('backup-excel-file-upload')?.addEventListener('change', handleBackupExcelUpload);
     const annualBackupDropZone = document.getElementById('annual-backup-drop-zone');
@@ -2784,6 +2821,7 @@
     }
 
     // Modal 9: Read Non-ReaDA Triggers
+    document.getElementById('btn-download-annual-nonreada-sample')?.addEventListener('click', downloadSampleExcelForAnnual);
     document.getElementById('btn-load-nonreada-preview')?.addEventListener('click', renderNonReadaPreview);
     document.getElementById('btn-confirm-import-nonreada')?.addEventListener('click', handleConfirmImportNonReada);
     document.getElementById('annual-excel-file-upload')?.addEventListener('change', handleAnnualExcelUpload);

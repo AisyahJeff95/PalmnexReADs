@@ -886,9 +886,49 @@
 
   // ================= Modal 7: Read Backup / Excel =================
   let uploadedVegBackupFile = null;
+  let uploadedVegBackupRows = [];
+
+  function downloadSampleExcelForVeg() {
+    const trial = getCurrentTrial() || { code: 'DTP1' };
+    const fileName = `Sample_Vegetative_Sampling_${trial.code}.xlsx`;
+    const existing = (trial.vegetativeRecords || []).slice(0, 5);
+    const sampleRows = existing.length > 0
+      ? existing.map((r, idx) => ({
+          REC_NO: r.rec || (idx + 1),
+          PLOT_NO: r.plot,
+          SUB_PLOT: r.subPlot || '',
+          PALM_NO: r.palmNo || '1',
+          FROND: r.frond || 17,
+          RACHIS_CM: r.rachisLen || 540.0,
+          PET_W_CM: r.petioleW || 5.2,
+          PET_D_CM: r.petioleD || 3.8,
+          PINNAE: r.pinnaeCount || 310,
+          LLEN_CM: r.leafletLen || 85.0,
+          LWID_CM: r.leafletW || 4.8,
+          TRUNK_M: r.trunkHt || 3.4
+        }))
+      : [
+          { REC_NO: 1, PLOT_NO: 1, SUB_PLOT: '', PALM_NO: '1', FROND: 17, RACHIS_CM: 545.0, PET_W_CM: 5.2, PET_D_CM: 3.8, PINNAE: 312, LLEN_CM: 86.0, LWID_CM: 4.8, TRUNK_M: 3.4 },
+          { REC_NO: 2, PLOT_NO: 1, SUB_PLOT: '', PALM_NO: '2', FROND: 17, RACHIS_CM: 538.0, PET_W_CM: 5.0, PET_D_CM: 3.7, PINNAE: 308, LLEN_CM: 84.5, LWID_CM: 4.7, TRUNK_M: 3.3 }
+        ];
+
+    if (window.XLSX) {
+      const ws = window.XLSX.utils.json_to_sheet(sampleRows);
+      const wb = window.XLSX.utils.book_new();
+      window.XLSX.utils.book_append_sheet(wb, ws, 'Vegetative_Sampling');
+      window.XLSX.writeFile(wb, fileName);
+      showToast(`Downloaded sample template "${fileName}"`);
+    } else {
+      exportVegetativeData();
+    }
+  }
+
+  document.getElementById('btn-download-veg-backup-sample')?.addEventListener('click', downloadSampleExcelForVeg);
+  document.getElementById('btn-download-veg-external-sample')?.addEventListener('click', downloadSampleExcelForVeg);
 
   function openBackupModal() {
     uploadedVegBackupFile = null;
+    uploadedVegBackupRows = [];
     const fileInp = document.getElementById('veg-backup-file-upload');
     const dropTitle = document.getElementById('veg-backup-drop-title');
     const statusText = document.getElementById('veg-backup-status-text');
@@ -916,6 +956,7 @@
   async function handleVegBackupFileSelect(file) {
     if (!file) return;
     uploadedVegBackupFile = file;
+    uploadedVegBackupRows = [];
     const dropTitle = document.getElementById('veg-backup-drop-title');
     const statusText = document.getElementById('veg-backup-status-text');
     if (dropTitle) dropTitle.textContent = `Selected: ${file.name}`;
@@ -926,10 +967,11 @@
         const workbook = window.XLSX.read(buffer, { type: 'array' });
         const sheetName = workbook.SheetNames[0];
         const rows = window.XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+        uploadedVegBackupRows = rows || [];
         if (statusText) {
-          statusText.textContent = `Verified: ${file.name} (${rows.length} rows in "${sheetName}")`;
+          statusText.textContent = `Verified: ${file.name} (${uploadedVegBackupRows.length} rows in "${sheetName}")`;
         }
-        showToast(`Verified "${file.name}" (${rows.length} rows)`);
+        showToast(`Verified "${file.name}" (${uploadedVegBackupRows.length} rows)`);
       } else if (statusText) {
         statusText.textContent = `Verified: ${file.name}`;
       }
@@ -969,9 +1011,29 @@
     const trial = getCurrentTrial();
     if (!trial) return;
 
+    if (uploadedVegBackupRows.length > 0) {
+      trial.vegetativeRecords = uploadedVegBackupRows.map((r, idx) => ({
+        rec: Number(r.REC_NO || r.rec || (idx + 1)),
+        plot: Number(r.PLOT || r.PLOT_NO || 1),
+        subPlot: String(r.SUBPLOT || r.SUB_PLOT || ''),
+        palmNo: String(r.PALM || r.PALM_NO || '18'),
+        frond: Number(r.FROND || 17),
+        rachisLen: Number(r.RACHIS_CM || r.RACHIS_LEN_CM || 540),
+        petioleW: Number(r.PET_W_CM || r.PETIOLE_W_CM || 5.2),
+        petioleD: Number(r.PET_D_CM || r.PETIOLE_D_CM || 3.8),
+        pinnaeCount: Number(r.PINNAE || r.PINNAE_COUNT || 310),
+        leafletLen: Number(r.LLEN_CM || r.LEAFLET_LEN_CM || 85),
+        leafletW: Number(r.LWID_CM || r.LEAFLET_W_CM || 4.8),
+        trunkHt: Number(r.TRUNK_M || r.TRUNK_HT_M || 3.4)
+      }));
+      if (window.ReadaSync && typeof window.ReadaSync.saveVegetativeRecords === 'function') {
+        window.ReadaSync.saveVegetativeRecords(trial.code, trial.vegetativeRecords);
+      }
+    }
+
     closeModal(modals.backup);
     refreshDashboard();
-    showToast(`Restored backup vegetative data for ${trial.code} from "${uploadedVegBackupFile.name}"`);
+    showToast(`Restored ${uploadedVegBackupRows.length} vegetative record(s) for ${trial.code} from "${uploadedVegBackupFile.name}"`);
   }
 
   // ================= Modal 8: Read External Excel Data (*.xlsx / *.xls / *.csv) =================

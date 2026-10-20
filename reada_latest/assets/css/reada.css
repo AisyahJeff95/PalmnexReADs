@@ -3024,6 +3024,21 @@ textarea.form-control {
   background: #f0fdf4;
 }
 
+.btn-sample-excel {
+  background-color: #facc15 !important;
+  border: 1px solid #eab308 !important;
+  color: #422006 !important;
+  font-weight: 700 !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  transition: all 0.15s ease;
+}
+
+.btn-sample-excel:hover {
+  background-color: #eab308 !important;
+  border-color: #ca8a04 !important;
+  color: #1e293b !important;
+}
+
 .map-status-pill {
   position: absolute;
   bottom: 20px;

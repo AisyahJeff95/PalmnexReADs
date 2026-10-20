@@ -753,7 +753,13 @@
 
     <div class="modal-body-scroll">
       <div class="form-field">
-        <label>Upload Excel Backup File (.xlsx / .xls / .csv):</label>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 6px;">
+          <label style="margin-bottom: 0;">Upload Excel Backup File (.xlsx / .xls / .csv):</label>
+          <button type="button" class="btn btn-sample-excel" id="btn-download-yield-backup-sample" style="font-size: 0.75rem; padding: 5px 11px; display: inline-flex; align-items: center; gap: 5px; background-color: #facc15; border: 1px solid #eab308; color: #422006; font-weight: 700;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 13px; height: 13px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download Sample Excel (.xlsx)
+          </button>
+        </div>
         <div id="yield-backup-drop-zone" class="upload-drop-zone" onclick="document.getElementById('yield-backup-file-upload').click()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width: 38px; height: 38px; color: var(--brand-green); margin: 0 auto 8px; display: block;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           <div id="yield-backup-drop-title" style="font-weight: 700; color: var(--text); font-size: 0.88rem; margin-bottom: 4px;">
@@ -763,6 +769,9 @@
             Supports Excel Spreadsheets (.xlsx, .xls) or CSV (.csv)
           </div>
           <input type="file" id="yield-backup-file-upload" accept=".xlsx,.xls,.csv" style="display: none;">
+        </div>
+        <div style="margin-top: 8px; font-size: 0.74rem; color: var(--text-muted); background: var(--surface-alt); border: 1px solid var(--border); border-radius: 4px; padding: 6px 10px; font-family: var(--font-mono);">
+          Expected Columns: PLOT_NO, SUB_PLOT, PALM_NO, ROUND_NO, HARVEST_DATE, NO_BUNCH, BUNCH_WT_KG, LOOSE_FRUIT_KG, HARVESTER_ID, REMARKS
         </div>
       </div>
 
@@ -798,7 +807,13 @@
     <div class="modal-body-scroll">
       <div class="form-row">
         <div class="form-field" style="grid-column: span 2;">
-          <label>Upload Excel File (.xlsx / .xls / .csv) to Read:</label>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 6px;">
+            <label style="margin-bottom: 0;">Upload Excel File (.xlsx / .xls / .csv) to Read:</label>
+            <button type="button" class="btn btn-sample-excel" id="btn-download-yield-nonreada-sample" style="font-size: 0.75rem; padding: 5px 11px; display: inline-flex; align-items: center; gap: 5px; background-color: #facc15; border: 1px solid #eab308; color: #422006; font-weight: 700;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 13px; height: 13px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Download Sample Excel (.xlsx)
+            </button>
+          </div>
           <div id="yield-nonreada-drop-zone" class="upload-drop-zone" onclick="document.getElementById('yield-excel-file-upload').click()" style="padding: 16px 12px;">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width: 30px; height: 30px; color: var(--brand-green); margin: 0 auto 6px; display: block;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
             <div id="yield-nonreada-drop-title" style="font-weight: 700; color: var(--text); font-size: 0.84rem; margin-bottom: 2px;">

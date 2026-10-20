@@ -719,9 +719,48 @@
   // 7. READ BACKUP / EXCEL (READ_BACKUP)
   // =========================================================================
   let uploadedYieldBackupFile = null;
+  let uploadedYieldBackupRows = [];
+
+  function downloadSampleExcelForYield() {
+    const t = getCurrentTrial();
+    const fileName = `Sample_Yield_Recording_${t.code}.xlsx`;
+    const existing = (t.harvestRecords || []).slice(0, 5);
+    const sampleRows = existing.length > 0
+      ? existing.map((r, idx) => ({
+          REC_NO: r.rec || (idx + 1),
+          PLOT_NO: r.plot,
+          SUB_PLOT: r.subPlot || '',
+          PALM_NO: r.palmNo || '1',
+          ROUND_NO: r.round || 1,
+          HARVEST_DATE: r.date || '14/04/1997',
+          NO_BUNCH: r.nob || 2,
+          BUNCH_WT_KG: r.bunchWt || 35.0,
+          LOOSE_FRUIT_KG: r.looseFruit || 2.0,
+          HARVESTER_ID: r.harvesterId || 'H01',
+          REMARKS: r.remarks || ''
+        }))
+      : [
+          { REC_NO: 1, PLOT_NO: 1, SUB_PLOT: '', PALM_NO: '1', ROUND_NO: 1, HARVEST_DATE: '14/04/1997', NO_BUNCH: 2, BUNCH_WT_KG: 36.5, LOOSE_FRUIT_KG: 1.8, HARVESTER_ID: 'H01', REMARKS: 'Normal harvest' },
+          { REC_NO: 2, PLOT_NO: 1, SUB_PLOT: '', PALM_NO: '2', ROUND_NO: 1, HARVEST_DATE: '14/04/1997', NO_BUNCH: 1, BUNCH_WT_KG: 21.0, LOOSE_FRUIT_KG: 1.2, HARVESTER_ID: 'H01', REMARKS: 'Normal harvest' }
+        ];
+
+    if (window.XLSX) {
+      const ws = window.XLSX.utils.json_to_sheet(sampleRows);
+      const wb = window.XLSX.utils.book_new();
+      window.XLSX.utils.book_append_sheet(wb, ws, 'Yield_Recording');
+      window.XLSX.writeFile(wb, fileName);
+      showToast(`Downloaded sample template "${fileName}"`);
+    } else {
+      exportYieldCSVDirect();
+    }
+  }
+
+  document.getElementById('btn-download-yield-backup-sample')?.addEventListener('click', downloadSampleExcelForYield);
+  document.getElementById('btn-download-yield-nonreada-sample')?.addEventListener('click', downloadSampleExcelForYield);
 
   function openBackupModal() {
     uploadedYieldBackupFile = null;
+    uploadedYieldBackupRows = [];
     const modal = modals.backup;
     const box = document.getElementById('yield-backup-preview-box');
     const fileInp = document.getElementById('yield-backup-file-upload');
@@ -735,6 +774,7 @@
   async function handleYieldBackupFileSelect(file) {
     if (!file) return;
     uploadedYieldBackupFile = file;
+    uploadedYieldBackupRows = [];
     const dropTitle = document.getElementById('yield-backup-drop-title');
     if (dropTitle) dropTitle.textContent = `Selected: ${file.name}`;
 
@@ -743,13 +783,18 @@
     const t = getCurrentTrial();
 
     let rowCountText = '';
+    let colsText = '';
     try {
       if (window.XLSX) {
         const buffer = await file.arrayBuffer();
         const workbook = window.XLSX.read(buffer, { type: 'array' });
         const sheetName = workbook.SheetNames[0];
         const rows = window.XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
-        rowCountText = ` (${rows.length} rows in sheet "${sheetName}")`;
+        uploadedYieldBackupRows = rows || [];
+        rowCountText = ` (${uploadedYieldBackupRows.length} rows in sheet "${sheetName}")`;
+        if (uploadedYieldBackupRows.length > 0) {
+          colsText = `<br>Detected Columns: <code>${Object.keys(uploadedYieldBackupRows[0]).join(', ')}</code>`;
+        }
       }
     } catch (err) {
       console.error(err);
@@ -758,7 +803,7 @@
     if (box && txt) {
       box.style.display = 'block';
       txt.innerHTML = `
-        <strong>Excel Backup File Ready:</strong> ${file.name}${rowCountText}<br>
+        <strong>Excel Backup File Ready:</strong> ${file.name}${rowCountText}${colsText}<br>
         Target Trial Code: <strong>${t.code} (${t.estate})</strong>.<br>
         Ready to restore harvesting rounds.
       `;
@@ -793,7 +838,25 @@
       return;
     }
     const t = getCurrentTrial();
-    showToast(`Yield data for ${t.code} restored from "${uploadedYieldBackupFile.name}" successfully`);
+    if (uploadedYieldBackupRows.length > 0) {
+      t.harvestRecords = uploadedYieldBackupRows.map((r, i) => ({
+        rec: Number(r.REC_NO || r.rec || (i + 1)),
+        plot: Number(r.PLOT_NO || r.PLOT || r.plot || 1),
+        subPlot: String(r.SUB_PLOT || r.SUBPLOT || r.subPlot || ''),
+        palmNo: String(r.PALM_NO || r.PALM || r.palmNo || '1'),
+        round: Number(r.ROUND_NO || r.RND || r.round || 1),
+        date: String(r.HARVEST_DATE || r.HARV_DATE || r.date || '14/04/1997'),
+        nob: Number(r.NO_BUNCH ?? r.NOB ?? r.BUNCH_NO ?? 2),
+        bunchWt: Number(r.BUNCH_WT_KG ?? r.BWT_KG ?? r.BUNCH_WT ?? 35.0),
+        looseFruit: Number(r.LOOSE_FRUIT_KG ?? r.LOOSE_KG ?? r.LOOSE_FRUIT ?? 2.0),
+        harvesterId: String(r.HARVESTER_ID || r.HARV_CODE || 'H01'),
+        remarks: String(r.REMARKS || r.REMARK || 'Restored from Excel backup')
+      }));
+      if (window.ReadaSync && typeof window.ReadaSync.saveYieldRecords === 'function') {
+        window.ReadaSync.saveYieldRecords(t.code, t.harvestRecords);
+      }
+    }
+    showToast(`Restored ${uploadedYieldBackupRows.length} yield record(s) for ${t.code} from "${uploadedYieldBackupFile.name}"`);
     closeModal(modals.backup);
     refreshHeader();
   });
