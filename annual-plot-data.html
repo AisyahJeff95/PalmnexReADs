@@ -501,7 +501,7 @@
      MODAL 1: New Annual Data Entry Selection Dialog (Screenshots 20 & 21)
      ========================================================================= -->
 <div class="modal-overlay" id="modal-new-annual-entry" role="dialog" aria-modal="true" aria-hidden="true">
-  <div class="modal-dialog" style="max-width: 820px;">
+  <div class="modal-dialog" style="max-width: 960px;">
     <div class="modal-header-bar">
       <div class="modal-title-text">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
@@ -552,7 +552,7 @@
       <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; align-items: start;">
         
         <!-- Col 1: Yield Parameters -->
-        <div style="background-color: var(--surface-alt); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; display: flex; flex-direction: column; gap: 10px; text-align: center;">
+        <div style="background-color: var(--surface-alt); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 10px; display: flex; flex-direction: column; gap: 10px; text-align: center;">
           <label style="font-size: 0.82rem; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer;">
             <input type="radio" name="new-entry-cat" value="ffb" checked>
             Yield Parameters
@@ -560,71 +560,71 @@
           <div id="new-cat-date-ffb" style="display: flex; flex-direction: column; gap: 6px;">
             <div style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600;">Mn / Year (Start — End)</div>
             <div style="display: flex; align-items: center; justify-content: center; gap: 4px;">
-              <input type="number" id="new-ffb-start-mn" value="3" min="1" max="12" style="width: 38px; text-align: center;" class="form-control">
+              <input type="number" id="new-ffb-start-mn" value="3" min="1" max="12" style="width: 64px; padding: 6px 4px; text-align: center;" class="form-control">
               <span>/</span>
-              <input type="number" id="new-ffb-start-yr" value="1997" min="1980" max="2030" style="width: 58px; text-align: center;" class="form-control">
+              <input type="number" id="new-ffb-start-yr" value="1997" min="1980" max="2030" style="width: 84px; padding: 6px 4px; text-align: center;" class="form-control">
             </div>
             <div style="display: flex; align-items: center; justify-content: center; gap: 4px;">
-              <input type="number" id="new-ffb-end-mn" value="2" min="1" max="12" style="width: 38px; text-align: center;" class="form-control">
+              <input type="number" id="new-ffb-end-mn" value="2" min="1" max="12" style="width: 64px; padding: 6px 4px; text-align: center;" class="form-control">
               <span>/</span>
-              <input type="number" id="new-ffb-end-yr" value="1998" min="1980" max="2030" style="width: 58px; text-align: center;" class="form-control">
+              <input type="number" id="new-ffb-end-yr" value="1998" min="1980" max="2030" style="width: 84px; padding: 6px 4px; text-align: center;" class="form-control">
             </div>
           </div>
           <button type="button" class="btn btn-primary" id="btn-cont-ffb" style="width: 100%;">Continue</button>
         </div>
 
         <!-- Col 2: Tissue Sampling -->
-        <div style="background-color: var(--surface-alt); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; display: flex; flex-direction: column; gap: 10px; text-align: center;">
+        <div style="background-color: var(--surface-alt); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 8px; display: flex; flex-direction: column; gap: 10px; text-align: center;">
           <label style="font-size: 0.82rem; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer;">
             <input type="radio" name="new-entry-cat" value="leaf">
             Tissue Sampl
           </label>
           <div id="new-cat-date-leaf" style="display: flex; flex-direction: column; gap: 6px;">
             <div style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600;">Dy / Mn / Year</div>
-            <div style="display: flex; align-items: center; justify-content: center; gap: 4px;">
-              <input type="number" id="new-leaf-dy" value="10" min="1" max="31" style="width: 38px; text-align: center;" class="form-control">
+            <div style="display: flex; align-items: center; justify-content: center; gap: 3px;">
+              <input type="number" id="new-leaf-dy" value="10" min="1" max="31" style="width: 56px; padding: 6px 3px; text-align: center;" class="form-control">
               <span>/</span>
-              <input type="number" id="new-leaf-mn" value="9" min="1" max="12" style="width: 38px; text-align: center;" class="form-control">
+              <input type="number" id="new-leaf-mn" value="9" min="1" max="12" style="width: 56px; padding: 6px 3px; text-align: center;" class="form-control">
               <span>/</span>
-              <input type="number" id="new-leaf-yr" value="1997" min="1980" max="2030" style="width: 58px; text-align: center;" class="form-control">
+              <input type="number" id="new-leaf-yr" value="1997" min="1980" max="2030" style="width: 78px; padding: 6px 3px; text-align: center;" class="form-control">
             </div>
           </div>
           <button type="button" class="btn btn-secondary" id="btn-cont-leaf" style="width: 100%;" disabled>Continue</button>
         </div>
 
         <!-- Col 3: Veg. Meas. -->
-        <div style="background-color: var(--surface-alt); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; display: flex; flex-direction: column; gap: 10px; text-align: center;">
+        <div style="background-color: var(--surface-alt); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 8px; display: flex; flex-direction: column; gap: 10px; text-align: center;">
           <label style="font-size: 0.82rem; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer;">
             <input type="radio" name="new-entry-cat" value="veg">
             Veg. Meas.
           </label>
           <div id="new-cat-date-veg" style="display: flex; flex-direction: column; gap: 6px;">
             <div style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600;">Dy / Mn / Year</div>
-            <div style="display: flex; align-items: center; justify-content: center; gap: 4px;">
-              <input type="number" id="new-veg-dy" value="22" min="1" max="31" style="width: 38px; text-align: center;" class="form-control">
+            <div style="display: flex; align-items: center; justify-content: center; gap: 3px;">
+              <input type="number" id="new-veg-dy" value="22" min="1" max="31" style="width: 56px; padding: 6px 3px; text-align: center;" class="form-control">
               <span>/</span>
-              <input type="number" id="new-veg-mn" value="7" min="1" max="12" style="width: 38px; text-align: center;" class="form-control">
+              <input type="number" id="new-veg-mn" value="7" min="1" max="12" style="width: 56px; padding: 6px 3px; text-align: center;" class="form-control">
               <span>/</span>
-              <input type="number" id="new-veg-yr" value="1997" min="1980" max="2030" style="width: 58px; text-align: center;" class="form-control">
+              <input type="number" id="new-veg-yr" value="1997" min="1980" max="2030" style="width: 78px; padding: 6px 3px; text-align: center;" class="form-control">
             </div>
           </div>
           <button type="button" class="btn btn-secondary" id="btn-cont-veg" style="width: 100%;" disabled>Continue</button>
         </div>
 
         <!-- Col 4: Soil Sample -->
-        <div style="background-color: var(--surface-alt); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; display: flex; flex-direction: column; gap: 10px; text-align: center;">
+        <div style="background-color: var(--surface-alt); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 8px; display: flex; flex-direction: column; gap: 10px; text-align: center;">
           <label style="font-size: 0.82rem; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer;">
             <input type="radio" name="new-entry-cat" value="soil">
             Soil Sample
           </label>
           <div id="new-cat-date-soil" style="display: flex; flex-direction: column; gap: 6px;">
             <div style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600;">Dy / Mn / Year</div>
-            <div style="display: flex; align-items: center; justify-content: center; gap: 4px;">
-              <input type="number" id="new-soil-dy" value="15" min="1" max="31" style="width: 38px; text-align: center;" class="form-control">
+            <div style="display: flex; align-items: center; justify-content: center; gap: 3px;">
+              <input type="number" id="new-soil-dy" value="15" min="1" max="31" style="width: 56px; padding: 6px 3px; text-align: center;" class="form-control">
               <span>/</span>
-              <input type="number" id="new-soil-mn" value="11" min="1" max="12" style="width: 38px; text-align: center;" class="form-control">
+              <input type="number" id="new-soil-mn" value="11" min="1" max="12" style="width: 56px; padding: 6px 3px; text-align: center;" class="form-control">
               <span>/</span>
-              <input type="number" id="new-soil-yr" value="1997" min="1980" max="2030" style="width: 58px; text-align: center;" class="form-control">
+              <input type="number" id="new-soil-yr" value="1997" min="1980" max="2030" style="width: 78px; padding: 6px 3px; text-align: center;" class="form-control">
             </div>
           </div>
           <button type="button" class="btn btn-secondary" id="btn-cont-soil" style="width: 100%;" disabled>Continue</button>
